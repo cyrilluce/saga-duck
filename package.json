@@ -40,7 +40,7 @@
     "composable"
   ],
   "author": "cyrilluce@gmail.com",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/cyrilluce/saga-duck/issues"
   },
