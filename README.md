@@ -1,12 +1,11 @@
+<img src="examples/example.gif" align="right"/>
+<br />
 # saga-duck
 extensible and composable duck for redux-saga
 
 See also
 [ducks-modular-redux](https://github.com/erikras/ducks-modular-redux)
 [extensible-duck](https://github.com/investtools/extensible-duck)
-
-# example
-<img src="examples/example.gif" align="right"/>
 
 # usage
 ## install
