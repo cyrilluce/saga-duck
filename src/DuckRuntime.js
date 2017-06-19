@@ -4,7 +4,6 @@
 import { createStore as createReduxStore, applyMiddleware } from "redux";
 import createSagaMiddleware from "redux-saga";
 import { all } from "redux-saga/effects";
-import { createLogger } from "redux-logger";
 import { connect } from "react-redux";
 
 /** store初始重置动作 */
@@ -18,9 +17,11 @@ export default class DuckRuntime {
   /**
      * 
      * @param {*} duck
+     * @param middlewares
      */
-  constructor(duck) {
+  constructor(duck, ...middlewares) {
     this.duck = duck;
+    this.middlewares = middlewares;
 
     this._initStore();
   }
@@ -30,11 +31,7 @@ export default class DuckRuntime {
   _initStore() {
     const sagaMiddleware = (this.sagaMiddleware = createSagaMiddleware());
 
-    const createStore = process.env.NODE_ENV === "development"
-      ? applyMiddleware(sagaMiddleware, createLogger({ collapsed: true }))(
-          createReduxStore
-        )
-      : applyMiddleware(sagaMiddleware)(createReduxStore);
+    const createStore = applyMiddleware(sagaMiddleware, ...this.middlewares)(createReduxStore);
 
     const duck = this.duck;
     this.store = createStore(duck.reducer);
