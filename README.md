@@ -14,6 +14,9 @@ See also
 npm i saga-duck -S
 ```
 
+## memtion
+Ducks should be stateless, so we can use React FSC(functional stateless compoment) and optimize later
+
 ## single duck
 ```js
 import { Duck } from "saga-duck";
@@ -139,6 +142,7 @@ export default class MyRootDuck extends DuckMap {
           /** copy transformed options to child duck */
           counter3: [
             CounterDuck,
+            /** DO NOT access duck.ducks here */
             (opts, duck) => ({ getStep: opts.getStep.bind(duck) })
           ]
         },

@@ -6,12 +6,10 @@ import createSagaMiddleware from "redux-saga";
 import { all } from "redux-saga/effects";
 import { connect } from "react-redux";
 
-/** store初始重置动作 */
+/** Fire when React Root Component mounted */
 export const INIT = "@@duck-runtime-init";
+/** Fire when React Root Component unmounted */
 export const END = "@@duck-runtime-end";
-/** store销毁Action（用于部分有状态的组件进行清理） */
-// 现在页面都是单例，或可不用管销毁，只管初始重置？
-// export const DESTROY = "@@duck-runtime-destroy";
 
 export default class DuckRuntime {
   /**
@@ -31,7 +29,9 @@ export default class DuckRuntime {
   _initStore() {
     const sagaMiddleware = (this.sagaMiddleware = createSagaMiddleware());
 
-    const createStore = applyMiddleware(sagaMiddleware, ...this.middlewares)(createReduxStore);
+    const createStore = applyMiddleware(sagaMiddleware, ...this.middlewares)(
+      createReduxStore
+    );
 
     const duck = this.duck;
     this.store = createStore(duck.reducer);

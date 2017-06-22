@@ -27,6 +27,11 @@ function assignDefaults(options) {
   }
 }
 
+let idSeed = 1
+function generateId(prefix = 'SAGA-DUCK') {
+  return `${prefix}-${idSeed++}`
+}
+
 export default class Duck {
   /**
    * 
@@ -36,6 +41,7 @@ export default class Duck {
    *    sagas
    */
   constructor(options, ...extendOptions) {
+    this.id = generateId()
     this.options = {
       namespace: 'global',
       route: '',
@@ -176,6 +182,10 @@ export default class Duck {
     })
     return (this._selectors = interceptedSelectors)
   }
+  /** selectors without root selector wrap, only use for local state */
+  get localSelectors() {
+    return this.options.selectors || {}
+  }
   /** saga列表，自动包装duck作为第一个参数 */
   get sagas() {
     if (this._sagas) {
@@ -230,4 +240,43 @@ export default class Duck {
     }
     return isArray ? [...a, ...b] : { ...a, ...b }
   }
+  /**
+   * Memorize function result, for React Performance optimize
+   * **MENTION** Should ONLY used to cache data associate with duck and dispatch, and duck MUST be stateless.
+   * 
+   * 缓存与duck及dispatch关联的数据生成，使得每次输出都是一致的，方便React性能优化。
+   * **注意** 仅能用于只和duck与dispatch有关的数据生成，并且duck必须是无状态的（即不可变的）
+   * 
+   * @param {*} fn (duck, dispatch, {refs}) => any
+   * @return {Function} memorizedFn (duckComponent | props) => cache
+   */
+  static memorize(fn) {
+    const cacheKey = '_sagaDuckMemorized'
+    const idKey = '_sagaDuckUniqId'
+    const fnId = fn[idKey] || (fn[idKey]=generateId('MEMORIZE-FN'))
+    return function memorizedFn(duckComponent) {
+      let cacheHost
+      let props
+      if (duckComponent.isReactComponent && duckComponent.props) {
+        props = duckComponent.props
+      } else {
+        props = duckComponent
+        duckComponent = null
+      }
+      const { duck, dispatch } = props
+      cacheHost = duckComponent || duck
+
+      const cache = cacheHost[cacheKey] || (cacheHost[cacheKey] = {})
+      if (!dispatch[idKey]) {
+        dispatch[idKey] = generateId('DISPATCH')
+      }
+      const key = duck.id + ':' + dispatch[idKey] + ':' + fnId
+      if (!(key in cache)) {
+        cache[key] = fn(duck, dispatch)
+      }
+      return cache[key]
+    }
+  }
 }
+
+export const memorize = Duck.memorize
