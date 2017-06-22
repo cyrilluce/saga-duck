@@ -1,6 +1,6 @@
 {
   "name": "saga-duck",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "extensible and composable duck for redux-saga",
   "main": "src/index.js",
   "directories": {
