@@ -26,7 +26,7 @@ const storeKey = 'store'
  * when any key has values which are not strictly equal between the arguments.
  * Returns true when the values of all keys are strictly equal.
  */
-function shallowEqual(objA, objB, withoutEventHandler = false) {
+function shallowEqual(objA, objB) {
   if (is(objA, objB)) {
     return true
   }
@@ -53,14 +53,7 @@ function shallowEqual(objA, objB, withoutEventHandler = false) {
   // Test for A's keys different from B.
   for (let i = 0; i < keysA.length; i++) {
     const key = keysA[i]
-    if (
-      withoutEventHandler &&
-      key !== 'dispatch' &&
-      typeof objA[key] === 'function' &&
-      typeof objB[key] === 'function'
-    ) {
-      continue
-    }
+
     if (
       isDuckComponent &&
       key === storeKey &&
@@ -85,31 +78,19 @@ export function shouldComponentUpdate(instance, props, state) {
   )
 }
 
-export function shouldComponentUpdateWithoutFunctions(instance, props, state) {
-  return (
-    !shallowEqual(instance.props, props, true) ||
-    !shallowEqual(instance.state, state, true)
-  )
-}
-
 /**
  * Make React stateless Component Memorizeable.
  * If props.duck's local state unchange, ignore store change.
  */
-export function purify(statelessRender, withoutFunctions = false) {
+export function purify(statelessRender) {
   let Base = Component
   if (typeof statelessRender.prototype.isReactComponent === 'object') {
     Base = statelessRender
     statelessRender = null
   }
   class PureRender extends Base {
-    get displayName() {
-      return Base.name || 'SagaDuckPurified'
-    }
     shouldComponentUpdate(nextProps, nextState) {
-      return (withoutFunctions
-        ? shouldComponentUpdateWithoutFunctions
-        : shouldComponentUpdate)(this, nextProps, nextState)
+      return shouldComponentUpdate(this, nextProps, nextState)
     }
   }
   if (statelessRender) {
@@ -117,9 +98,7 @@ export function purify(statelessRender, withoutFunctions = false) {
       return statelessRender(this.props)
     }
   }
+  PureRender.displayName =
+    (statelessRender && statelessRender.name) || Base.displayName || Base.name
   return PureRender
-}
-
-export function purifyNoFn(render) {
-  return purify(render, true)
 }

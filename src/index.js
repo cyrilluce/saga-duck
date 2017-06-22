@@ -3,7 +3,5 @@ export { default as DuckMap } from "./DuckMap";
 export { default as DuckRuntime, INIT, END } from "./DuckRuntime";
 export {
   purify,
-  purifyNoFn,
-  shouldComponentUpdate,
-  shouldComponentUpdateWithoutFunctions
+  shouldComponentUpdate
 } from "./purify";
