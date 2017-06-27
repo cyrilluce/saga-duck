@@ -4,7 +4,7 @@
 import { createStore as createReduxStore, applyMiddleware } from "redux";
 import createSagaMiddleware from "redux-saga";
 import { connect } from "react-redux";
-export { parallel } from "redux-saga-catch"
+import { parallel } from "redux-saga-catch"
 
 /** Fire when React Root Component mounted */
 export const INIT = "@@duck-runtime-init";
