@@ -3,8 +3,8 @@
  */
 import { createStore as createReduxStore, applyMiddleware } from "redux";
 import createSagaMiddleware from "redux-saga";
-import { all } from "redux-saga/effects";
 import { connect } from "react-redux";
+export { parallel } from "redux-saga-catch"
 
 /** Fire when React Root Component mounted */
 export const INIT = "@@duck-runtime-init";
@@ -44,7 +44,7 @@ export default class DuckRuntime {
      */
   addSaga(sagas) {
     this.sagaMiddleware.run(function*() {
-      yield all(sagas.map(saga => saga()));
+      yield parallel(sagas)
     });
   }
   /**

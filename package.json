@@ -1,6 +1,6 @@
 {
   "name": "saga-duck",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "extensible and composable duck for redux-saga",
   "main": "src/index.js",
   "directories": {
@@ -9,7 +9,8 @@
   "dependencies": {
     "react-redux": "^5.0.5",
     "redux": "^3.6.0",
-    "redux-saga": "^0.15.3"
+    "redux-saga": "^0.15.3",
+    "redux-saga-catch": "0.0.1"
   },
   "devDependencies": {
     "babel": "^6.23.0",
