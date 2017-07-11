@@ -15,7 +15,8 @@ npm i saga-duck -S
 ```
 
 ## memtion
-Ducks should be stateless, so we can use React FSC(functional stateless compoment) and optimize later
+Ducks should be stateless, so we can use React FSC(functional stateless compoment) and optimize later.
+You should only access store by duck.selector or duck.selectors.
 
 ## single duck
 ```js
@@ -186,9 +187,7 @@ import Root from "./Root";
 import Duck from "./RootDuck";
 
 const duckRuntime = new DuckRuntime(new Duck({...}));
-const ConnectedComponent = duckRuntime.root()(
-  duckRuntime.connect()(Root)
-);
+const ConnectedComponent = duckRuntime.connectRoot()(Root);
 
 ReactDOM.render(
   <Provider store={duckRuntime.store}>
