@@ -14,6 +14,9 @@ See also
 npm i saga-duck -S
 ```
 
+## Documents
+[Document-中文](https://cyrilluce.gitbooks.io/saga-duck)
+
 ## memtion
 Ducks should be stateless, so we can use React FSC(functional stateless compoment) and optimize later.
 You should only access store by duck.selector or duck.selectors.
