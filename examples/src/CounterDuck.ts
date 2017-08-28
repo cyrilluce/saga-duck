@@ -1,18 +1,39 @@
-import { Duck } from "saga-duck";
+import { Duck } from "../../src";
 import { takeEvery, call, put, select } from "redux-saga/effects";
 import { delay } from "redux-saga";
 
-export default class MyDuck extends Duck {
+const types = {
+  /** 增加 */
+  INCREMENT: '',
+  INCREMENT_IF_ODD: '',
+  DECREMENT: '',
+  INCREMENT_ASYNC: ''
+};
+interface Creators{
+  increment(step: number): { type: string; step: number };
+  incrementIfOdd(): { type: string };
+  decrement(): { type: string };
+  incrementAsync(): { type: string };
+}
+interface Selectors{
+  count: (any) => number;
+}
+interface Options{
+  step?: number;
+  getStep?: () => number;
+}
+export default class MyDuck extends Duck<
+  number,
+  typeof types,
+  Creators,
+  Selectors,
+  Options
+> {
   constructor() {
     super(
       {
         /** actionTypes */
-        typeList: [
-          "INCREMENT",
-          "INCREMENT_IF_ODD",
-          "DECREMENT",
-          "INCREMENT_ASYNC"
-        ],
+        types,
         /** single reducer */
         reducer: (state = 0, action, duck) => {
           const { types } = duck;

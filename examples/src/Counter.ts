@@ -1,6 +1,7 @@
-import React from 'react'
+import * as React from 'react'
+import Duck from './CounterDuck'
 
-export default function Counter({ duck, store, dispatch }) {
+export default function Counter({ duck, store, dispatch }: {duck: Duck, store: any, dispatch: ()=>any}) {
   const { selectors, creators } = duck;
   const value = selectors.count(store)
   return (

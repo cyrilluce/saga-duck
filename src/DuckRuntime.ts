@@ -1,18 +1,30 @@
 /**
  * 组合ducks，创建redux store
  */
-import { Component, createElement } from "react";
-import { createStore as createReduxStore, applyMiddleware } from "redux";
-import createSagaMiddleware from "redux-saga";
+import { Component, createElement, ComponentClass, ComponentType, StatelessComponent } from "react";
+import {
+  createStore as createReduxStore,
+  applyMiddleware,
+  Store,
+  Dispatch
+} from "redux";
+import createSagaMiddleware, { SagaIterator, SagaMiddleware } from "redux-saga";
 import { connect } from "react-redux";
 import { parallel } from "redux-saga-catch";
+
+import Duck from "./Duck";k
+import { DuckComponent, DuckComponentProps } from "./DuckComponent";
 
 /** Fire when React Root Component mounted */
 export const INIT = "@@duck-runtime-init";
 /** Fire when React Root Component unmounted */
 export const END = "@@duck-runtime-end";
 
-export default class DuckRuntime {
+export default class DuckRuntime<TState = any> {
+  duck: Duck<TState>;
+  private middlewares: any[];
+  private sagaMiddleware: SagaMiddleware<any>;
+  private store: Store<TState>;
   /**
      * 
      * @param {*} duck
@@ -35,7 +47,7 @@ export default class DuckRuntime {
     );
 
     const duck = this.duck;
-    this.store = createStore(duck.reducer);
+    this.store = createStore(<any>duck.reducer);
 
     this.addSaga(duck.sagas);
   }
@@ -44,7 +56,7 @@ export default class DuckRuntime {
      * add sagas to store, will auto run.
      * @param {Array<Saga|Generator>} sagas 
      */
-  addSaga(sagas) {
+  addSaga(sagas: Array<() => SagaIterator>) {
     this.sagaMiddleware.run(function*() {
       yield parallel(sagas);
     });
@@ -58,7 +70,9 @@ export default class DuckRuntime {
      */
   connect() {
     const duck = this.duck;
-    return function decorate(Container) {
+    return function decorate(
+      Container: DuckComponent
+    ) {
       return connect(
         state => ({ store: state }),
         dispatch => ({
@@ -74,7 +88,7 @@ export default class DuckRuntime {
    */
   root() {
     const store = this.store;
-    return function decorate(Container) {
+    return function decorate(Container): ComponentClass {
       class AttachedContainer extends Component {
         componentDidMount() {
           store.dispatch({ type: INIT });
@@ -92,7 +106,7 @@ export default class DuckRuntime {
           return createElement(Container, this.props);
         }
       }
-      AttachedContainer.displayName = `duckRoot(${Container.displayName ||
+      (AttachedContainer as ComponentClass).displayName = `duckRoot(${Container.displayName ||
         Container.name ||
         "Unknown"})`;
       return AttachedContainer;
