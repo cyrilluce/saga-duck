@@ -7,10 +7,35 @@ module.exports = {
   resolve: {
     alias: {
       "saga-duck": path.resolve(__dirname, "src/index")
-    }
+    },
+    extensions: ['.jsx', '.js', '.tsx', '.ts']
   },
   module: {
     rules: [
+      {
+        test: /\.tsx?$/,
+        exclude: ["node_modules"],
+        use: [
+          {
+            loader: "babel-loader",
+            options: {
+              presets: [
+                [
+                  "env",
+                  {
+                    targets: {
+                      chrome: 58
+                    }
+                  }
+                ],
+                "react",
+                "stage-2"
+              ]
+            }
+          },
+          "ts-loader"
+        ]
+      },
       {
         test: /\.jsx?$/,
         loader: "babel-loader",

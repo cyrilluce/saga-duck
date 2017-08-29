@@ -38,46 +38,61 @@ function generateId(prefix = "SAGA-DUCK") {
   return `${prefix}-${idSeed++}`;
 }
 
-// export default interface Duck<
-//   TState = any,
-//   TTypes extends Types = {},
-//   TCreators extends Creators = {},
-//   TSelectors extends Selectors = {},
-//   TMoreOptions = {}
-// > {};
-
-type DynamicOption<Result, TDuck extends Duck> = (duck: TDuck) => Result;
-type StaticOption<Result> = Result;
-export type Option<Result, TDuck extends Duck> =
+/**
+ * 动态配置（函数式），传入当前Duck实例，返回最终的配置。
+ */
+export type DynamicOption<Result, TDuck> = (duck: TDuck) => Result;
+/**
+ * 静态配置，直接就是最终值。
+ */
+export type StaticOption<Result> = Result;
+/**
+ * 配置兼容动态及静态。
+ */
+export type Option<Result, TDuck> =
   | StaticOption<Result>
   | DynamicOption<Result, TDuck>;
 
-export interface Types {
-  [key: string]: string | number;
-}
+/**
+ * 最终types会转换为MAP，值并不需要关注，Duck自动添加前缀保证Duck间隔离。
+ */
+export type TYPES<T> = { readonly [P in keyof T]: string };
 
-type DuckReducer<State, TDuck> = (
-  state: State,
+/**
+ * Duck的根reducer，通常用reducers替代
+ */
+export type DuckReducer<TState, TDuck> = (
+  state: TState,
   action: any,
   duck: TDuck
-) => State;
-type DuckSelector<TState = any, TGlobalState = any> = (
-  state: TGlobalState
 ) => TState;
+/**
+ * Duck的根选择器
+ */
+export type DuckSelector<TState, TGlobalState = any> = (state: TGlobalState) => TState;
+/**
+ * Duck关联的Saga逻辑
+ */
+export type Saga<TDuck> = (duck: TDuck) => SagaIterator;
 
-type Saga<TDuck> = (duck: TDuck) => SagaIterator;
+/**
+ * 本地选择器定义
+ */
+export type SELECTORS<T, TState> = { [P in keyof T]: (state: TState) => T[P] };
+/**
+ * 已包装的全局选择器定义，直接用于全局redux store state
+ */
+export type WRAPPED_SELECTORS<T> = { [P in keyof T]: (globalState: any) => T[P] };
 
-interface OptSelectors<State> {
-  [key: string]: (state: State) => any;
-}
+/**
+ * Reducers定义
+ */
+export type REDUCERS<TState> = { [key in keyof TState]: Reducer<TState[key]> };
 
-export interface DuckOptions<
-  TState = any,
-  TTypes = any,
-  TCreators = any,
-  TSelectors = any,
-  TMoreOptions extends object = {}
-> {
+/**
+ * Duck的构造参数
+ */
+export interface DuckOptions<TDuck, TState, TTypes, TCreators, TSelectors> {
   /** 
    * 命名空间 
    * @deprecated
@@ -89,68 +104,51 @@ export interface DuckOptions<
    * 初始状态，不推荐使用，请直接使用reducer的默认参数
    * @deprecated
    */
-  initialState?: Option<
-    any,
-    Duck<TState, TTypes, TCreators, TSelectors, TMoreOptions>
-  >;
-  /** ActionType字串列表，会自动生成duck.types */
+  initialState?: Option<TState, TDuck>;
+  /** ActionType字串列表，会自动生成duck.types，如果用typescript，建议用types配置，配合enum使用 */
   typeList?: (keyof TTypes)[];
-  /** 或者可以简单点？这样就可以用typeof了 TODO  */
+  /** ActionType映射，注意最终ActionType的值并不是定义时候的值（会加前缀），如果用typescript，建议用enum  */
   types?: TTypes;
+  /**
+   * 常量定义，不常用
+   * @deprecated
+   */
   constList?: string[];
-  /** action creators */
-  creators?: DynamicOption<
-    TCreators,
-    Duck<TState, TTypes, TCreators, TSelectors, TMoreOptions>
-  >;
-  /** reducer */
-  reducer?: DuckReducer<
-    TState,
-    Duck<TState, TTypes, TCreators, TSelectors, TMoreOptions>
-  >;
-  /** Reducers */
-  reducers?: DynamicOption<
-    ReducersMapObject,
-    Duck<TState, TTypes, TCreators, TSelectors, TMoreOptions>
-  >;
+  /** action creator MAP映射 */
+  creators?: DynamicOption<Partial<TCreators>, TDuck>;
+  /** 根reducer */
+  reducer?: DuckReducer<TState, TDuck>;
+  /** Reducers MAP映射 */
+  reducers?: DynamicOption<Partial<REDUCERS<TState>>, TDuck>;
   selector?: (globalState: any) => TState;
-  selectors?: OptSelectors<TState>;
-  sagas?: Saga<Duck<TState, TTypes, TCreators, TSelectors, TMoreOptions>>[];
+  selectors?: SELECTORS<Partial<TSelectors>, TState>;
+  sagas?: Saga<TDuck>[];
 }
-
-export interface Creators {
-  [key: string]: (...args: any[]) => any;
-}
-
-export interface Selectors {
-  [key: string]: (state: any) => any;
-}
-
-type CombileOptions<Old, New> = Old & New;
 
 /**
  * 扩展定义 [optionKey, isGetter, isArray]
  */
-type ExtendOption = [string, boolean, boolean];
+export type ExtendOption = [string, boolean, boolean];
 
 export default class Duck<
   TState = any,
   TTypes = any,
   TCreators = any,
   TSelectors = any,
-  TMoreOptions extends object = {}
+  TMoreOptions = {}
 > {
-  id: string;
-  options: TMoreOptions & DuckOptions<TState, TTypes, TCreators, TSelectors>;
-  private _types: TTypes;
+  protected id: string;
+  options: TMoreOptions &
+    DuckOptions<this, TState, TTypes, TCreators, TSelectors>;
+  private _types: TYPES<TTypes>;
   private _consts: object;
   private _creators: TCreators;
-  private _reducers: ReducersMapObject;
+  private _reducers: REDUCERS<TState>;
   private _reducer: Reducer<TState>;
   private _initialState: TState;
   private _constList: object;
   private _selector: (globalState: any) => TState;
-  private _selectors: TSelectors;
+  private _selectors: WRAPPED_SELECTORS<TSelectors>;
   private _sagas: (() => SagaIterator)[];
   /**
    * 
@@ -161,9 +159,21 @@ export default class Duck<
    */
   constructor(
     options?: TMoreOptions &
-      DuckOptions<TState, TTypes, TCreators, TSelectors, TMoreOptions>,
+      DuckOptions<
+        Duck<TState, TTypes, TCreators, TSelectors, TMoreOptions>,
+        TState,
+        TTypes,
+        TCreators,
+        TSelectors
+      >,
     ...extendOptions: (TMoreOptions &
-      DuckOptions<TState, TTypes, TCreators, TSelectors, TMoreOptions>)[]
+      DuckOptions<
+        Duck<TState, TTypes, TCreators, TSelectors, TMoreOptions>,
+        TState,
+        TTypes,
+        TCreators,
+        TSelectors
+      >)[]
   ) {
     this.id = generateId();
     this.options = {
@@ -178,16 +188,16 @@ export default class Duck<
     }
   }
   /** 扩展Duck */
-  extend(
+  protected extend(
     options: TMoreOptions &
-      DuckOptions<TState, TTypes, TCreators, TSelectors, TMoreOptions>
+      DuckOptions<this, TState, TTypes, TCreators, TSelectors>
   ): void {
     const parent = this.options;
     // options = assignDefaults(options)
 
     this.options = this.extendOptions(parent, options);
   }
-  extendOptions(
+  protected extendOptions(
     parent: TMoreOptions &
       DuckOptions<TState, TTypes, TCreators, TSelectors, TMoreOptions>,
     child: TMoreOptions &
@@ -221,12 +231,12 @@ export default class Duck<
     return this.options.route;
   }
   /** ActionType前缀 */
-  get actionTypePrefix(): string {
+  protected get actionTypePrefix(): string {
     const { namespace, route } = this.options;
     return route ? `${namespace}/${route}/` : `${namespace}/`;
   }
   /** ActionType常量Map，根据options.types或typeList生成 */
-  get types(): TTypes {
+  get types(): TYPES<TTypes> {
     if (this._types) {
       return this._types;
     }
@@ -240,10 +250,10 @@ export default class Duck<
     finalTypeList.forEach(type => {
       finalTypes[type as string] = prefix + type;
     });
-    return (this._types = finalTypes as TTypes);
+    return (this._types = finalTypes as TYPES<TTypes>);
   }
 
-  /** 其它常量定义 */
+  /** 其它常量定义 @deprecated */
   get consts() {
     if (this._consts) {
       return this._consts;
@@ -260,26 +270,28 @@ export default class Duck<
     if (this._creators) {
       return this._creators;
     }
-    const { creators = () => ({} as TCreators) } = this.options;
-    return (this._creators = creators(this));
+    const { creators = () => ({}) } = this.options;
+    return (this._creators = <TCreators>creators(this));
   }
+  /** initialState已经建议在reducer/reducers中实现，此属性不推荐使用 @deprecated */
   get initialState(): TState {
     if (this._initialState) {
       return this._initialState;
     }
     const { initialState } = this.options;
     return (this._initialState =
-      typeof initialState === "function" ? initialState() : initialState);
+      typeof initialState === "function" ? initialState(this) : initialState);
   }
   /** root reducer，自动带上Duck作为第3个参数，或从reducers生成，自动带上Duck作为第1个参数 */
-  get reducer(): DuckReducer<TState, this> {
+  get reducer(): Reducer<TState> {
     if (this._reducer) {
       return this._reducer;
     }
     const reducers = this.reducers;
     const reducerList = [];
     if (Object.keys(reducers).length > 0) {
-      reducerList.push(combineReducers(this.reducers));
+      // 这里强制转ReducersMapObject有问题，比较奇怪，只能用any将就一下
+      reducerList.push(combineReducers(this.reducers as any));
     }
     const { reducer } = this.options;
     if (reducer) {
@@ -289,9 +301,9 @@ export default class Duck<
     }
     return (this._reducer = Duck.mergeReducers(...reducerList));
   }
-  get reducers(): ReducersMapObject {
+  get reducers(): REDUCERS<TState> {
     const { reducers } = this.options;
-    return reducers(this);
+    return reducers(this) as REDUCERS<TState>;
   }
   /** 根选择器，根据options.selector与options.route共同生成 */
   get selector(): DuckSelector<TState> {
@@ -303,7 +315,7 @@ export default class Duck<
       selector || (route && (state => state[route])) || (state => state));
   }
   /** selectors生成，会自动以根selector包装 TODO 或可考虑与selector合并，既是方法 */
-  get selectors(): TSelectors {
+  get selectors(): WRAPPED_SELECTORS<TSelectors> {
     if (this._selectors) {
       return this._selectors;
     }
@@ -315,11 +327,13 @@ export default class Duck<
         return selectors[key].call(selectors, rootSelector(state));
       };
     });
-    return (this._selectors = <TSelectors>interceptedSelectors);
+    return (this._selectors = <WRAPPED_SELECTORS<
+      TSelectors
+    >>interceptedSelectors);
   }
   /** selectors without root selector wrap, only use for local state */
-  get localSelectors(): OptSelectors<TState> {
-    return this.options.selectors || {};
+  get localSelectors(): SELECTORS<TSelectors, TState> {
+    return this.options.selectors;
   }
   /** saga列表，自动包装duck作为第一个参数 */
   get sagas(): (() => SagaIterator)[] {
@@ -327,12 +341,7 @@ export default class Duck<
       return this._sagas;
     }
     const { sagas = [] } = this.options;
-    return (this._sagas = sagas.map(
-      saga =>
-        function() {
-          return saga(this);
-        }
-    ));
+    return (this._sagas = sagas.map(saga => () => saga(this)));
   }
   static mergeStates(oldState, states) {
     const newState = { ...oldState };

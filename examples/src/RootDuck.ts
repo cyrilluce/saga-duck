@@ -1,10 +1,40 @@
-import { DuckMap } from "saga-duck";
+import { DuckMap } from "../../src";
 import { takeEvery, call, put, select } from "redux-saga/effects";
 import CounterDuck from "./CounterDuck";
 
-export default class MyRootDuck extends DuckMap {
+interface State{
+  total: number
+}
+interface Types{
+  INCREMENT: string
+  CHILD_INCREMENT: string
+}
+interface Creators{
+
+}
+interface Selectors{
+
+}
+interface Options{
+  step: number
+  getStep: (...any: any[]) => number
+}
+interface Ducks{
+  counter1: CounterDuck
+  counter2: CounterDuck
+  counter3: CounterDuck
+}
+export default class MyRootDuck extends DuckMap<
+  State,
+  Types,
+  Creators,
+  Selectors,
+  Options,
+  Ducks
+> {
   constructor() {
-    super(
+    super(...arguments)
+    this.extend(
       {
         /** child ducks, { [route]: ChildDuck }, can access by duck.ducks[route] */
         ducks: {

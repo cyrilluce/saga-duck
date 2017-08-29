@@ -12,7 +12,7 @@ import createSagaMiddleware, { SagaIterator, SagaMiddleware } from "redux-saga";
 import { connect } from "react-redux";
 import { parallel } from "redux-saga-catch";
 
-import Duck from "./Duck";k
+import Duck from "./Duck";
 import { DuckComponent, DuckComponentProps } from "./DuckComponent";
 
 /** Fire when React Root Component mounted */
@@ -24,7 +24,7 @@ export default class DuckRuntime<TState = any> {
   duck: Duck<TState>;
   private middlewares: any[];
   private sagaMiddleware: SagaMiddleware<any>;
-  private store: Store<TState>;
+  public store: Store<TState>;
   /**
      * 
      * @param {*} duck

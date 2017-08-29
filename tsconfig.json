@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+      "target": "es2015",
+      "module": "es2015",
+      "jsx": "react",
+      "outDir": "build",
+      "removeComments": true,
+      "noLib": false,
+      "preserveConstEnums": true,
+      "experimentalDecorators": true,
+      "moduleResolution": "node"
+    },
+    "compileOnSave": true,
+    "include": [
+        "src/**/*"
+    ]
+  }

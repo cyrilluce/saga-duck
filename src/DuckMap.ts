@@ -1,8 +1,9 @@
 /**
  * Duck可以拥有几个子Duck，映射在不同的route上，相互隔离，同时又在一个store上行效。
  */
-import Duck from "./Duck";
+import Duck, { DuckOptions } from "./Duck";
 import { SagaIterator } from "redux-saga";
+import { Action } from "redux";
 
 function getOptions(duck, options, keys) {
   return keys.reduce((o, key) => {
@@ -34,13 +35,31 @@ function getOptions(duck, options, keys) {
   }, {});
 }
 
-type ChildDuck = { new (...any: any[]): Duck };
+export type ChildDuck = { new (...any: any[]): Duck };
+export type DIRECTLY_DUCK<TDuckClass> = TDuckClass;
 
-export interface DuckMapOptions {
-  ducks: {
-    [key: string]: ChildDuck;
-  };
-}
+export type PARAM_STRING = string;
+export type PARAM_MAP = { [key: string]: string };
+export type PARAM_GETTER = (opts: any, duck: any) => Object;
+export type PARAM = PARAM_STRING | PARAM_MAP | PARAM_GETTER;
+// 6个应该够用了吧？
+export type PARAM_LIST_DUCK<TDuckClass> =
+  | [TDuckClass, PARAM]
+  | [TDuckClass, PARAM, PARAM]
+  | [TDuckClass, PARAM, PARAM, PARAM]
+  | [TDuckClass, PARAM, PARAM, PARAM, PARAM]
+  | [TDuckClass, PARAM, PARAM, PARAM, PARAM, PARAM]
+  | [TDuckClass, PARAM, PARAM, PARAM, PARAM, PARAM, PARAM];
+
+export type DUCK_OPTION<TDuckClass> =
+  | DIRECTLY_DUCK<TDuckClass>
+  | PARAM_LIST_DUCK<TDuckClass>;
+/**
+ * Ducks配置格式
+ */
+export type DUCKS_OPTIONS<TDucks> = {
+  [key in keyof TDucks]: DUCK_OPTION<new () => TDucks[key]>
+};
 
 export default class DuckMap<
   TState = any,
@@ -48,25 +67,25 @@ export default class DuckMap<
   TCreators = any,
   TSelectors = any,
   TMoreOptions = {},
-  Ducks = {}
+  TDucks = {}
 > extends Duck<
   TState,
   TTypes,
   TCreators,
   TSelectors,
-  TMoreOptions & {ducks: Ducks}
+  TMoreOptions & { ducks?: DUCKS_OPTIONS<TDucks> }
 > {
-  private _ducks: Ducks;
+  private _ducks: TDucks;
   private _mapSagas: (() => SagaIterator)[];
   /** 提供ducks继承 */
-  extendOptions(opt1, opt2, ...externals) {
+  protected extendOptions(opt1, opt2, ...externals) {
     return super.extendOptions(opt1, opt2, ...externals, [
       "ducks",
       false,
       false
     ]);
   }
-  get ducks() {
+  get ducks(): TDucks {
     if (this._ducks) {
       return this._ducks;
     }
@@ -90,10 +109,9 @@ export default class DuckMap<
         ...duckOptions
       });
     });
-    this._ducks = <Ducks>map;
-    return map;
+    return (this._ducks = <TDucks>map);
   }
-  eachDucks(callback) {
+  protected eachDucks(callback) {
     const ducks = this.ducks;
     Object.keys(ducks).forEach(route => {
       callback(ducks[route], route);
