@@ -49,6 +49,8 @@
   ],
   "files": [
     "src",
+    "build",
+    "index.d.ts",
     "README.md"
   ],
   "author": "cyrilluce@gmail.com",
