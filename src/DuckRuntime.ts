@@ -11,14 +11,18 @@ import {
 import createSagaMiddleware, { SagaIterator, SagaMiddleware } from "redux-saga";
 import { connect } from "react-redux";
 import { parallel } from "redux-saga-catch";
-
 import Duck from "./Duck";
-import { DuckComponent, DuckComponentProps } from "./DuckComponent";
 
 /** Fire when React Root Component mounted */
 export const INIT = "@@duck-runtime-init";
 /** Fire when React Root Component unmounted */
 export const END = "@@duck-runtime-end";
+
+export interface DuckCmpProps{
+  duck: any,
+  store: any,
+  dispatch: Dispatch<any>
+}
 
 export default class DuckRuntime<TState = any> {
   duck: Duck<TState>;
@@ -71,7 +75,7 @@ export default class DuckRuntime<TState = any> {
   connect() {
     const duck = this.duck;
     return function decorate(
-      Container: DuckComponent
+      Container: ComponentType<DuckCmpProps>
     ) {
       return connect(
         state => ({ store: state }),
@@ -123,7 +127,7 @@ export default class DuckRuntime<TState = any> {
     const decorateRoot = this.root();
     const decorateConnect = this.connect();
     return function decorate(Container) {
-      return decorateConnect(decorateRoot(Container));
+      return decorateConnect(decorateRoot(Container) as ComponentClass<DuckCmpProps>);
     };
   }
 }

@@ -71,21 +71,6 @@ declare module 'saga-duck/Duck' {
 	export const memorize: typeof Duck.memorize;
 
 }
-declare module 'saga-duck/DuckComponent' {
-	/// <reference types="react" />
-	import { ComponentClass, StatelessComponent } from "react";
-	import { Dispatch } from "redux";
-	import Duck from 'saga-duck/Duck';
-	export interface DuckComponentProps<T extends Duck = Duck<any>, State = any> {
-	    duck: T;
-	    store: State;
-	    dispatch: Dispatch<any>;
-	}
-	export type DuckStatelessComponent<Props = any, T extends Duck = Duck<any>, State = any> = StatelessComponent<Props & DuckComponentProps<T, State>>;
-	export type DuckComponentClass<Props = any, T extends Duck = Duck<any>, State = any> = ComponentClass<Props & DuckComponentProps<T, State>>;
-	export type DuckComponent<Props = any, T extends Duck = Duck<any>, State = any> = DuckStatelessComponent<Props, T, State> | DuckComponentClass<Props, T, State>;
-
-}
 declare module 'saga-duck/DuckMap' {
 	import Duck, { DuckOptions } from 'saga-duck/Duck';
 	import { Action } from "redux";
@@ -125,13 +110,17 @@ declare module 'saga-duck/DuckMap' {
 }
 declare module 'saga-duck/DuckRuntime' {
 	/// <reference types="react" />
-	import { ComponentClass } from "react";
-	import { Store } from "redux";
+	import { ComponentClass, ComponentType } from "react";
+	import { Store, Dispatch } from "redux";
 	import { SagaIterator } from "redux-saga";
 	import Duck from 'saga-duck/Duck';
-	import { DuckComponent } from 'saga-duck/DuckComponent';
 	export const INIT = "@@duck-runtime-init";
 	export const END = "@@duck-runtime-end";
+	export interface DuckCmpProps {
+	    duck: any;
+	    store: any;
+	    dispatch: Dispatch<any>;
+	}
 	export default class DuckRuntime<TState = any> {
 	    duck: Duck<TState>;
 	    private middlewares;
@@ -140,9 +129,9 @@ declare module 'saga-duck/DuckRuntime' {
 	    constructor(duck: any, ...middlewares: any[]);
 	    _initStore(): void;
 	    addSaga(sagas: Array<() => SagaIterator>): void;
-	    connect(): (Container: DuckComponent<any, Duck<any, any, any, any, {}>, any>) => ComponentClass<Pick<any, any>>;
+	    connect(): (Container: ComponentType<DuckCmpProps>) => ComponentClass<Pick<DuckCmpProps, never>>;
 	    root(): (Container: any) => ComponentClass<{}>;
-	    connectRoot(): (Container: any) => ComponentClass<Pick<any, any>>;
+	    connectRoot(): (Container: any) => ComponentClass<Pick<DuckCmpProps, never>>;
 	}
 
 }
@@ -156,10 +145,11 @@ declare module 'saga-duck/purify' {
 declare module 'saga-duck/index' {
 	export { default as Duck, memorize } from 'saga-duck/Duck';
 	export { default as DuckMap } from 'saga-duck/DuckMap';
-	export { default as DuckRuntime, INIT, END } from 'saga-duck/DuckRuntime';
-	export { DuckComponent } from 'saga-duck/DuckComponent';
+	export { default as DuckRuntime, DuckCmpProps, INIT, END } from 'saga-duck/DuckRuntime';
 	export { purify, shouldComponentUpdate } from 'saga-duck/purify';
 
 }
 declare module 'saga-duck' {
-	}
+	import main = require('saga-duck/index');
+	export = main;
+}

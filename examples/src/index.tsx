@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { Provider } from "react-redux";
-import { DuckRuntime } from "../../src";
+import { DuckRuntime, DuckCmpProps } from "../../src";
 import Root from "./Root";
 import Duck from "./RootDuck";
 import { createLogger } from "redux-logger";
