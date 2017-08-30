@@ -89,11 +89,11 @@ export function shouldComponentUpdate(instance, props, state) {
  * Make React stateless Component Memorizeable.
  * If props.duck's local state unchange, ignore store change.
  */
-export function purify(component: ComponentType): ComponentClass {
-  let Base: ComponentClass = Component;
+export function purify<T extends Object>(component: ComponentType<T>): ComponentClass<T> {
+  let Base: ComponentClass<T> = Component;
   let statelessRender: StatelessComponent;
   if (typeof component.prototype.isReactComponent === "object") {
-    Base = <ComponentClass>component;
+    Base = <ComponentClass<T>>component;
   } else {
     statelessRender = <StatelessComponent>component;
   }

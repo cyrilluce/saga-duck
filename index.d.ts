@@ -1,6 +1,5 @@
 declare module 'saga-duck/Duck' {
 	import { Reducer } from "redux";
-	import { SagaIterator } from "redux-saga";
 	export type DynamicOption<Result, TDuck> = (duck: TDuck) => Result;
 	export type StaticOption<Result> = Result;
 	export type Option<Result, TDuck> = StaticOption<Result> | DynamicOption<Result, TDuck>;
@@ -9,7 +8,7 @@ declare module 'saga-duck/Duck' {
 	};
 	export type DuckReducer<TState, TDuck> = (state: TState, action: any, duck: TDuck) => TState;
 	export type DuckSelector<TState, TGlobalState = any> = (state: TGlobalState) => TState;
-	export type Saga<TDuck> = (duck: TDuck) => SagaIterator;
+	export type Saga<TDuck> = (duck: TDuck) => any;
 	export type SELECTORS<T, TState> = {
 	    [P in keyof T]: (state: TState) => T[P];
 	};
@@ -17,7 +16,7 @@ declare module 'saga-duck/Duck' {
 	    [P in keyof T]: (globalState: any) => T[P];
 	};
 	export type REDUCERS<TState> = {
-	    [key in keyof TState]: Reducer<TState[key]>;
+	    [key in keyof TState]: (state: TState[key], action: any) => TState[key];
 	};
 	export interface DuckOptions<TDuck, TState, TTypes, TCreators, TSelectors> {
 	    namespace?: string;
@@ -62,7 +61,7 @@ declare module 'saga-duck/Duck' {
 	    readonly selector: DuckSelector<TState>;
 	    readonly selectors: WRAPPED_SELECTORS<TSelectors>;
 	    readonly localSelectors: SELECTORS<TSelectors, TState>;
-	    readonly sagas: (() => SagaIterator)[];
+	    readonly sagas: (() => any)[];
 	    static mergeStates(oldState: any, states: any): any;
 	    static mergeReducers(...reducers: any[]): any;
 	    static mergeOption(parent: any, child: any, key: any, isArray: any, isGetter: any): any;
@@ -73,7 +72,6 @@ declare module 'saga-duck/Duck' {
 }
 declare module 'saga-duck/DuckMap' {
 	import Duck, { DuckOptions } from 'saga-duck/Duck';
-	import { Action } from "redux";
 	export type ChildDuck = {
 	    new (...any: any[]): Duck;
 	};
@@ -102,7 +100,7 @@ declare module 'saga-duck/DuckMap' {
 	    readonly ducks: TDucks;
 	    protected eachDucks(callback: any): void;
 	    readonly reducers: {
-	        [key in keyof TState]: <A extends Action>(state: TState[key], action: A) => TState[key];
+	        [key in keyof TState]: (state: TState[key], action: any) => TState[key];
 	    };
 	    readonly sagas: any[];
 	}
@@ -139,7 +137,7 @@ declare module 'saga-duck/purify' {
 	/// <reference types="react" />
 	import { ComponentType, ComponentClass } from "react";
 	export function shouldComponentUpdate(instance: any, props: any, state: any): boolean;
-	export function purify(component: ComponentType): ComponentClass;
+	export function purify<T extends Object>(component: ComponentType<T>): ComponentClass<T>;
 
 }
 declare module 'saga-duck/index' {

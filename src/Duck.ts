@@ -8,7 +8,6 @@ import {
   Reducer,
   ReducersMapObject
 } from "redux";
-import { SagaIterator } from "redux-saga";
 
 function defaultCreators() {
   return {};
@@ -69,11 +68,13 @@ export type DuckReducer<TState, TDuck> = (
 /**
  * Duck的根选择器
  */
-export type DuckSelector<TState, TGlobalState = any> = (state: TGlobalState) => TState;
+export type DuckSelector<TState, TGlobalState = any> = (
+  state: TGlobalState
+) => TState;
 /**
  * Duck关联的Saga逻辑
  */
-export type Saga<TDuck> = (duck: TDuck) => SagaIterator;
+export type Saga<TDuck> = (duck: TDuck) => any;
 
 /**
  * 本地选择器定义
@@ -82,12 +83,16 @@ export type SELECTORS<T, TState> = { [P in keyof T]: (state: TState) => T[P] };
 /**
  * 已包装的全局选择器定义，直接用于全局redux store state
  */
-export type WRAPPED_SELECTORS<T> = { [P in keyof T]: (globalState: any) => T[P] };
+export type WRAPPED_SELECTORS<T> = {
+  [P in keyof T]: (globalState: any) => T[P]
+};
 
 /**
  * Reducers定义
  */
-export type REDUCERS<TState> = { [key in keyof TState]: Reducer<TState[key]> };
+export type REDUCERS<TState> = {
+  [key in keyof TState]: (state: TState[key], action: any) => TState[key]
+};
 
 /**
  * Duck的构造参数
@@ -149,7 +154,7 @@ export default class Duck<
   private _constList: object;
   private _selector: (globalState: any) => TState;
   private _selectors: WRAPPED_SELECTORS<TSelectors>;
-  private _sagas: (() => SagaIterator)[];
+  private _sagas: (() => any)[];
   /**
    * 
    * @param {*} options 
@@ -336,7 +341,7 @@ export default class Duck<
     return this.options.selectors;
   }
   /** saga列表，自动包装duck作为第一个参数 */
-  get sagas(): (() => SagaIterator)[] {
+  get sagas(): (() => any)[] {
     if (this._sagas) {
       return this._sagas;
     }
