@@ -1,6 +1,6 @@
 {
   "name": "saga-duck",
-  "version": "1.0.5",
+  "version": "1.1.0",
   "description": "extensible and composable duck for redux-saga",
   "main": "build/index.js",
   "directories": {
@@ -58,5 +58,5 @@
   "bugs": {
     "url": "https://github.com/cyrilluce/saga-duck/issues"
   },
-  "homepage": "https://github.com/cyrilluce/saga-duck#readme"
+  "homepage": "https://cyrilluce.gitbooks.io/saga-duck/content"
 }
