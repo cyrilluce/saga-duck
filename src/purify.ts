@@ -1,9 +1,4 @@
-import {
-  Component,
-  ComponentType,
-  ComponentClass,
-  StatelessComponent
-} from "react";
+import { Component } from "react";
 
 const hasOwnProperty = Object.prototype.hasOwnProperty;
 
@@ -89,13 +84,13 @@ export function shouldComponentUpdate(instance, props, state) {
  * Make React stateless Component Memorizeable.
  * If props.duck's local state unchange, ignore store change.
  */
-export function purify<T extends Object>(component: ComponentType<T>): ComponentClass<T> {
-  let Base: ComponentClass<T> = Component;
-  let statelessRender: StatelessComponent;
+export function purify(component): any {
+  let Base = Component;
+  let statelessRender;
   if (typeof component.prototype.isReactComponent === "object") {
-    Base = <ComponentClass<T>>component;
+    Base = component;
   } else {
-    statelessRender = <StatelessComponent>component;
+    statelessRender = component;
   }
   class PureRender extends Base {
     shouldComponentUpdate(nextProps, nextState) {
@@ -103,11 +98,11 @@ export function purify<T extends Object>(component: ComponentType<T>): Component
     }
   }
   if (statelessRender) {
-    PureRender.prototype.render = function render() {
+    (PureRender.prototype as any).render = function render() {
       return statelessRender(this.props);
     };
   }
-  PureRender.displayName =
+  (PureRender as any).displayName =
     (statelessRender && statelessRender.name) || Base.displayName || Base.name;
   return PureRender;
 }

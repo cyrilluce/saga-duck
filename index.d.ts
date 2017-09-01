@@ -1,5 +1,4 @@
 declare module 'saga-duck/Duck' {
-	import { Reducer } from "redux";
 	export type DynamicOption<Result, TDuck> = (duck: TDuck) => Result;
 	export type StaticOption<Result> = Result;
 	export type Option<Result, TDuck> = StaticOption<Result> | DynamicOption<Result, TDuck>;
@@ -18,15 +17,16 @@ declare module 'saga-duck/Duck' {
 	export type REDUCERS<TState> = {
 	    [key in keyof TState]: (state: TState[key], action: any) => TState[key];
 	};
+	export type REDUCER<TState> = (state: TState, action: any) => TState;
 	export interface DuckOptions<TDuck, TState, TTypes, TCreators, TSelectors> {
 	    namespace?: string;
 	    route?: string;
 	    initialState?: Option<TState, TDuck>;
 	    typeList?: (keyof TTypes)[];
-	    types?: TTypes;
+	    types?: Partial<TTypes>;
 	    constList?: string[];
 	    creators?: DynamicOption<Partial<TCreators>, TDuck>;
-	    reducer?: DuckReducer<TState, TDuck>;
+	    reducer?: DuckReducer<Partial<TState>, TDuck>;
 	    reducers?: DynamicOption<Partial<REDUCERS<TState>>, TDuck>;
 	    selector?: (globalState: any) => TState;
 	    selectors?: SELECTORS<Partial<TSelectors>, TState>;
@@ -35,7 +35,7 @@ declare module 'saga-duck/Duck' {
 	export type ExtendOption = [string, boolean, boolean];
 	export default class Duck<TState = any, TTypes = any, TCreators = any, TSelectors = any, TMoreOptions = {}> {
 	    protected id: string;
-	    options: TMoreOptions & DuckOptions<this, TState, TTypes, TCreators, TSelectors>;
+	    options: Partial<TMoreOptions> & DuckOptions<this, TState, TTypes, TCreators, TSelectors>;
 	    private _types;
 	    private _consts;
 	    private _creators;
@@ -46,9 +46,10 @@ declare module 'saga-duck/Duck' {
 	    private _selector;
 	    private _selectors;
 	    private _sagas;
-	    constructor(options?: TMoreOptions & DuckOptions<Duck<TState, TTypes, TCreators, TSelectors, TMoreOptions>, TState, TTypes, TCreators, TSelectors>, ...extendOptions: (TMoreOptions & DuckOptions<Duck<TState, TTypes, TCreators, TSelectors, TMoreOptions>, TState, TTypes, TCreators, TSelectors>)[]);
-	    protected extend(options: TMoreOptions & DuckOptions<this, TState, TTypes, TCreators, TSelectors>): void;
-	    protected extendOptions(parent: TMoreOptions & DuckOptions<TState, TTypes, TCreators, TSelectors, TMoreOptions>, child: TMoreOptions & DuckOptions<TState, TTypes, TCreators, TSelectors, TMoreOptions>, ...extraOptionDefines: Array<ExtendOption>): TMoreOptions & DuckOptions<TState, TTypes, TCreators, TSelectors, TMoreOptions>;
+	    constructor(...extendOptions: (Partial<TMoreOptions> & DuckOptions<Duck<TState, TTypes, TCreators, TSelectors, TMoreOptions>, TState, TTypes, TCreators, TSelectors>)[]);
+	    protected init(): void;
+	    protected extend(options: Partial<TMoreOptions> & DuckOptions<this, TState, TTypes, TCreators, TSelectors>): void;
+	    protected extendOptions(parent: Partial<TMoreOptions> & DuckOptions<this, TState, TTypes, TCreators, TSelectors>, child: Partial<TMoreOptions> & DuckOptions<this, TState, TTypes, TCreators, TSelectors>, ...extraOptionDefines: Array<ExtendOption>): Partial<TMoreOptions> & DuckOptions<this, TState, TTypes, TCreators, TSelectors>;
 	    readonly namespace: string;
 	    readonly route: string;
 	    protected readonly actionTypePrefix: string;
@@ -56,7 +57,7 @@ declare module 'saga-duck/Duck' {
 	    readonly consts: object;
 	    readonly creators: TCreators;
 	    readonly initialState: TState;
-	    readonly reducer: Reducer<TState>;
+	    readonly reducer: REDUCER<TState>;
 	    readonly reducers: REDUCERS<TState>;
 	    readonly selector: DuckSelector<TState>;
 	    readonly selectors: WRAPPED_SELECTORS<TSelectors>;
@@ -85,18 +86,16 @@ declare module 'saga-duck/DuckMap' {
 	export type PARAM_LIST_DUCK<TDuckClass> = [TDuckClass, PARAM] | [TDuckClass, PARAM, PARAM] | [TDuckClass, PARAM, PARAM, PARAM] | [TDuckClass, PARAM, PARAM, PARAM, PARAM] | [TDuckClass, PARAM, PARAM, PARAM, PARAM, PARAM] | [TDuckClass, PARAM, PARAM, PARAM, PARAM, PARAM, PARAM];
 	export type DUCK_OPTION<TDuckClass> = DIRECTLY_DUCK<TDuckClass> | PARAM_LIST_DUCK<TDuckClass>;
 	export type DUCKS_OPTIONS<TDucks> = {
-	    [key in keyof TDucks]: DUCK_OPTION<new () => TDucks[key]>;
+	    [key in keyof TDucks]?: DUCK_OPTION<new (...opts: any[]) => TDucks[key]>;
 	};
 	export default class DuckMap<TState = any, TTypes = any, TCreators = any, TSelectors = any, TMoreOptions = {}, TDucks = {}> extends Duck<TState, TTypes, TCreators, TSelectors, TMoreOptions & {
 	    ducks?: DUCKS_OPTIONS<TDucks>;
 	}> {
 	    private _ducks;
 	    private _mapSagas;
-	    protected extendOptions(opt1: any, opt2: any, ...externals: any[]): TMoreOptions & {
+	    protected extendOptions(opt1: any, opt2: any, ...externals: any[]): Partial<TMoreOptions & {
 	        ducks?: DUCKS_OPTIONS<TDucks>;
-	    } & DuckOptions<TState, TTypes, TCreators, TSelectors, TMoreOptions & {
-	        ducks?: DUCKS_OPTIONS<TDucks>;
-	    }>;
+	    }> & DuckOptions<this, TState, TTypes, TCreators, TSelectors>;
 	    readonly ducks: TDucks;
 	    protected eachDucks(callback: any): void;
 	    readonly reducers: {
@@ -107,37 +106,32 @@ declare module 'saga-duck/DuckMap' {
 
 }
 declare module 'saga-duck/DuckRuntime' {
-	/// <reference types="react" />
-	import { ComponentClass, ComponentType } from "react";
-	import { Store, Dispatch } from "redux";
 	import { SagaIterator } from "redux-saga";
 	import Duck from 'saga-duck/Duck';
 	export const INIT = "@@duck-runtime-init";
 	export const END = "@@duck-runtime-end";
-	export interface DuckCmpProps {
-	    duck: any;
+	export interface DuckCmpProps<T = any> {
+	    duck: T;
 	    store: any;
-	    dispatch: Dispatch<any>;
+	    dispatch: (action: any) => any;
 	}
 	export default class DuckRuntime<TState = any> {
 	    duck: Duck<TState>;
 	    private middlewares;
 	    private sagaMiddleware;
-	    store: Store<TState>;
+	    store: any;
 	    constructor(duck: any, ...middlewares: any[]);
 	    _initStore(): void;
 	    addSaga(sagas: Array<() => SagaIterator>): void;
-	    connect(): (Container: ComponentType<DuckCmpProps>) => ComponentClass<Pick<DuckCmpProps, never>>;
-	    root(): (Container: any) => ComponentClass<{}>;
-	    connectRoot(): (Container: any) => ComponentClass<Pick<DuckCmpProps, never>>;
+	    connect(): (Container: any) => any;
+	    root(): (Container: any) => any;
+	    connectRoot(): (Container: any) => any;
 	}
 
 }
 declare module 'saga-duck/purify' {
-	/// <reference types="react" />
-	import { ComponentType, ComponentClass } from "react";
 	export function shouldComponentUpdate(instance: any, props: any, state: any): boolean;
-	export function purify<T extends Object>(component: ComponentType<T>): ComponentClass<T>;
+	export function purify(component: any): any;
 
 }
 declare module 'saga-duck/index' {

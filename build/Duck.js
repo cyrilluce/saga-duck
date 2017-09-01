@@ -16,14 +16,20 @@ function generateId(prefix = "SAGA-DUCK") {
     return `${prefix}-${idSeed++}`;
 }
 export default class Duck {
-    constructor(options, ...extendOptions) {
+    constructor(...extendOptions) {
         this.id = generateId();
-        this.options = Object.assign({ namespace: "global", route: "" }, assignDefaults(options));
+        this.init();
         if (extendOptions.length) {
             extendOptions.forEach(options => {
                 this.extend(options);
             });
         }
+    }
+    init() {
+        this.options = assignDefaults({
+            namespace: "global",
+            route: ""
+        });
     }
     extend(options) {
         const parent = this.options;
@@ -34,6 +40,7 @@ export default class Duck {
         const defaultOptionDefines = [
             ["constList", true, false],
             ["typeList", true, false],
+            ["types", false, false],
             ["creators", false, true],
             ["reducers", false, true],
             ["selectors", false, false],
@@ -68,7 +75,7 @@ export default class Duck {
         let finalTypeList = typeList;
         const finalTypes = {};
         if (types) {
-            finalTypeList = Object.keys(types);
+            finalTypeList = finalTypeList.concat(Object.keys(types));
         }
         finalTypeList.forEach(type => {
             finalTypes[type] = prefix + type;

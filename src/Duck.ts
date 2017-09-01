@@ -2,12 +2,7 @@
  * 尝试改进Duck
  * @author cluezhang
  */
-import {
-  combineReducers,
-  ActionCreator,
-  Reducer,
-  ReducersMapObject
-} from "redux";
+import { combineReducers } from "redux";
 
 function defaultCreators() {
   return {};
@@ -93,6 +88,7 @@ export type WRAPPED_SELECTORS<T> = {
 export type REDUCERS<TState> = {
   [key in keyof TState]: (state: TState[key], action: any) => TState[key]
 };
+export type REDUCER<TState> = (state: TState, action: any) => TState;
 
 /**
  * Duck的构造参数
@@ -113,7 +109,7 @@ export interface DuckOptions<TDuck, TState, TTypes, TCreators, TSelectors> {
   /** ActionType字串列表，会自动生成duck.types，如果用typescript，建议用types配置，配合enum使用 */
   typeList?: (keyof TTypes)[];
   /** ActionType映射，注意最终ActionType的值并不是定义时候的值（会加前缀），如果用typescript，建议用enum  */
-  types?: TTypes;
+  types?: Partial<TTypes>;
   /**
    * 常量定义，不常用
    * @deprecated
@@ -122,7 +118,7 @@ export interface DuckOptions<TDuck, TState, TTypes, TCreators, TSelectors> {
   /** action creator MAP映射 */
   creators?: DynamicOption<Partial<TCreators>, TDuck>;
   /** 根reducer */
-  reducer?: DuckReducer<TState, TDuck>;
+  reducer?: DuckReducer<Partial<TState>, TDuck>;
   /** Reducers MAP映射 */
   reducers?: DynamicOption<Partial<REDUCERS<TState>>, TDuck>;
   selector?: (globalState: any) => TState;
@@ -143,13 +139,13 @@ export default class Duck<
   TMoreOptions = {}
 > {
   protected id: string;
-  options: TMoreOptions &
+  options: Partial<TMoreOptions> &
     DuckOptions<this, TState, TTypes, TCreators, TSelectors>;
   private _types: TYPES<TTypes>;
   private _consts: object;
   private _creators: TCreators;
   private _reducers: REDUCERS<TState>;
-  private _reducer: Reducer<TState>;
+  private _reducer: REDUCER<TState>;
   private _initialState: TState;
   private _constList: object;
   private _selector: (globalState: any) => TState;
@@ -163,15 +159,7 @@ export default class Duck<
    *    sagas
    */
   constructor(
-    options?: TMoreOptions &
-      DuckOptions<
-        Duck<TState, TTypes, TCreators, TSelectors, TMoreOptions>,
-        TState,
-        TTypes,
-        TCreators,
-        TSelectors
-      >,
-    ...extendOptions: (TMoreOptions &
+    ...extendOptions: (Partial<TMoreOptions> &
       DuckOptions<
         Duck<TState, TTypes, TCreators, TSelectors, TMoreOptions>,
         TState,
@@ -181,20 +169,30 @@ export default class Duck<
       >)[]
   ) {
     this.id = generateId();
-    this.options = {
-      namespace: "global",
-      route: "",
-      ...assignDefaults(options)
-    };
+
+    this.init();
+    // extendOptions不再推荐使用，请换init()方法进行扩展
     if (extendOptions.length) {
       extendOptions.forEach(options => {
         this.extend(options);
       });
     }
   }
+
+  /** 因为typescript的限制，无法在constructor参数中使用this声明，所以另开个方法 */
+  protected init(): void {
+    // 子类扩展时，应先调父类的方法，再extend自己的属性
+    // super.init();
+    // this.extend({ ... });
+
+    this.options = assignDefaults({
+      namespace: "global",
+      route: ""
+    });
+  }
   /** 扩展Duck */
   protected extend(
-    options: TMoreOptions &
+    options: Partial<TMoreOptions> &
       DuckOptions<this, TState, TTypes, TCreators, TSelectors>
   ): void {
     const parent = this.options;
@@ -203,10 +201,10 @@ export default class Duck<
     this.options = this.extendOptions(parent, options);
   }
   protected extendOptions(
-    parent: TMoreOptions &
-      DuckOptions<TState, TTypes, TCreators, TSelectors, TMoreOptions>,
-    child: TMoreOptions &
-      DuckOptions<TState, TTypes, TCreators, TSelectors, TMoreOptions>,
+    parent: Partial<TMoreOptions> &
+      DuckOptions<this, TState, TTypes, TCreators, TSelectors>,
+    child: Partial<TMoreOptions> &
+      DuckOptions<this, TState, TTypes, TCreators, TSelectors>,
     ...extraOptionDefines: Array<ExtendOption>
   ) {
     const options = Object.assign({}, parent, child);
@@ -214,6 +212,7 @@ export default class Duck<
       // optionKey, isArray, isGetter
       ["constList", true, false],
       ["typeList", true, false],
+      ["types", false, false],
       ["creators", false, true],
       ["reducers", false, true],
       ["selectors", false, false],
@@ -250,7 +249,7 @@ export default class Duck<
     let finalTypeList: string[] = typeList;
     const finalTypes = {};
     if (types) {
-      finalTypeList = Object.keys(types);
+      finalTypeList = finalTypeList.concat(Object.keys(types));
     }
     finalTypeList.forEach(type => {
       finalTypes[type as string] = prefix + type;
@@ -288,7 +287,7 @@ export default class Duck<
       typeof initialState === "function" ? initialState(this) : initialState);
   }
   /** root reducer，自动带上Duck作为第3个参数，或从reducers生成，自动带上Duck作为第1个参数 */
-  get reducer(): Reducer<TState> {
+  get reducer(): REDUCER<TState> {
     if (this._reducer) {
       return this._reducer;
     }

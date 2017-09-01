@@ -58,7 +58,7 @@ export type DUCK_OPTION<TDuckClass> =
  * Ducks配置格式
  */
 export type DUCKS_OPTIONS<TDucks> = {
-  [key in keyof TDucks]: DUCK_OPTION<new () => TDucks[key]>
+  [key in keyof TDucks]?: DUCK_OPTION<new (...opts: any[]) => TDucks[key]>
 };
 
 export default class DuckMap<

@@ -1,13 +1,8 @@
 /**
  * 组合ducks，创建redux store
  */
-import { Component, createElement, ComponentClass, ComponentType, StatelessComponent } from "react";
-import {
-  createStore as createReduxStore,
-  applyMiddleware,
-  Store,
-  Dispatch
-} from "redux";
+import { Component, createElement } from "react";
+import { createStore as createReduxStore, applyMiddleware } from "redux";
 import createSagaMiddleware, { SagaIterator, SagaMiddleware } from "redux-saga";
 import { connect } from "react-redux";
 import { parallel } from "redux-saga-catch";
@@ -18,17 +13,17 @@ export const INIT = "@@duck-runtime-init";
 /** Fire when React Root Component unmounted */
 export const END = "@@duck-runtime-end";
 
-export interface DuckCmpProps{
-  duck: any,
-  store: any,
-  dispatch: Dispatch<any>
+export interface DuckCmpProps<T = any> {
+  duck: T;
+  store: any;
+  dispatch: (action: any) => any;
 }
 
 export default class DuckRuntime<TState = any> {
   duck: Duck<TState>;
   private middlewares: any[];
   private sagaMiddleware: SagaMiddleware<any>;
-  public store: Store<TState>;
+  public store: any;
   /**
      * 
      * @param {*} duck
@@ -74,9 +69,7 @@ export default class DuckRuntime<TState = any> {
      */
   connect() {
     const duck = this.duck;
-    return function decorate(
-      Container: ComponentType<DuckCmpProps>
-    ) {
+    return function decorate(Container) {
       return connect(
         state => ({ store: state }),
         dispatch => ({
@@ -92,7 +85,7 @@ export default class DuckRuntime<TState = any> {
    */
   root() {
     const store = this.store;
-    return function decorate(Container): ComponentClass {
+    return function decorate(Container): any {
       class AttachedContainer extends Component {
         componentDidMount() {
           store.dispatch({ type: INIT });
@@ -107,10 +100,10 @@ export default class DuckRuntime<TState = any> {
           }
         }
         render() {
-          return createElement(Container, this.props);
+          return createElement(Container, (this as any).props);
         }
       }
-      (AttachedContainer as ComponentClass).displayName = `duckRoot(${Container.displayName ||
+      (AttachedContainer as any).displayName = `duckRoot(${Container.displayName ||
         Container.name ||
         "Unknown"})`;
       return AttachedContainer;
@@ -127,7 +120,7 @@ export default class DuckRuntime<TState = any> {
     const decorateRoot = this.root();
     const decorateConnect = this.connect();
     return function decorate(Container) {
-      return decorateConnect(decorateRoot(Container) as ComponentClass<DuckCmpProps>);
+      return decorateConnect(decorateRoot(Container));
     };
   }
 }
