@@ -66,7 +66,7 @@ declare module 'saga-duck/Duck' {
 	    static mergeStates(oldState: any, states: any): any;
 	    static mergeReducers(...reducers: any[]): any;
 	    static mergeOption(parent: any, child: any, key: any, isArray: any, isGetter: any): any;
-	    static memorize(fn: any): (duckComponent: any) => any;
+	    static memorize<T>(fn: (duck: any, dispatch: any) => T): (reactInstanceOrProps: any) => T;
 	}
 	export const memorize: typeof Duck.memorize;
 
@@ -112,8 +112,8 @@ declare module 'saga-duck/DuckRuntime' {
 	export const END = "@@duck-runtime-end";
 	export interface DuckCmpProps<T = any> {
 	    duck: T;
-	    store: any;
 	    dispatch: (action: any) => any;
+	    store: any;
 	}
 	export default class DuckRuntime<TState = any> {
 	    duck: Duck<TState>;

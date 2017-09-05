@@ -401,7 +401,7 @@ export default class Duck<
    * @param {*} fn (duck, dispatch, {refs}) => any
    * @return {Function} memorizedFn (duckComponent | props) => cache
    */
-  static memorize(fn) {
+  static memorize<T>(fn: (duck:any, dispatch: any)=>T): (reactInstanceOrProps: any)=>T {
     const cacheKey = "_sagaDuckMemorized";
     const idKey = "_sagaDuckUniqId";
     const fnId = fn[idKey] || (fn[idKey] = generateId("MEMORIZE-FN"));
