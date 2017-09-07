@@ -80,29 +80,36 @@ export function shouldComponentUpdate(instance, props, state) {
   );
 }
 
+function shouldComponentUpdateForReplace(nextProps, nextState) {
+  return shouldComponentUpdate(this, nextProps, nextState);
+}
+
 /**
  * Make React stateless Component Memorizeable.
  * If props.duck's local state unchange, ignore store change.
  */
 export function purify(component): any {
-  let Base = Component;
-  let statelessRender;
   if (typeof component.prototype.isReactComponent === "object") {
-    Base = component;
-  } else {
-    statelessRender = component;
-  }
-  class PureRender extends Base {
-    shouldComponentUpdate(nextProps, nextState) {
-      return shouldComponentUpdate(this, nextProps, nextState);
+    if (component.prototype.shouldComponentUpdate !== undefined) {
+      console.warn(
+        "purify() only use to decorate class dose not implement shouldComponentUpdate"
+      );
     }
+    // 强制覆盖
+    component.prototype.shouldComponentUpdate = shouldComponentUpdateForReplace;
+    return component;
+  } else {
+    const statelessRender = component;
+    class PureRender extends Component {
+      private props: any;
+      render() {
+        return statelessRender(this.props);
+      }
+      shouldComponentUpdate(nextProps, nextState) {
+        return shouldComponentUpdate(this, nextProps, nextState);
+      }
+    }
+    (PureRender as any).displayName = statelessRender && statelessRender.name;
+    return PureRender;
   }
-  if (statelessRender) {
-    (PureRender.prototype as any).render = function render() {
-      return statelessRender(this.props);
-    };
-  }
-  (PureRender as any).displayName =
-    (statelessRender && statelessRender.name) || Base.displayName || Base.name;
-  return PureRender;
 }

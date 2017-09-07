@@ -88,18 +88,22 @@ declare module 'saga-duck/DuckMap' {
 	export type DUCKS_OPTIONS<TDucks> = {
 	    [key in keyof TDucks]?: DUCK_OPTION<new (...opts: any[]) => TDucks[key]>;
 	};
-	export default class DuckMap<TState = any, TTypes = any, TCreators = any, TSelectors = any, TMoreOptions = {}, TDucks = {}> extends Duck<TState, TTypes, TCreators, TSelectors, TMoreOptions & {
+	export type MEMBER_OF<TObject extends Object, TKey extends keyof TObject> = TObject[TKey];
+	export type DUCKS_STATE<TDucks extends Object> = {
+	    [key in keyof TDucks]?: MEMBER_OF<TDucks[key], 'initialState'>;
+	};
+	export default class DuckMap<TState = any, TTypes = any, TCreators = any, TSelectors = any, TMoreOptions = {}, TDucks = {}> extends Duck<TState & DUCKS_STATE<TDucks>, TTypes, TCreators, TSelectors, TMoreOptions & {
 	    ducks?: DUCKS_OPTIONS<TDucks>;
 	}> {
 	    private _ducks;
 	    private _mapSagas;
 	    protected extendOptions(opt1: any, opt2: any, ...externals: any[]): Partial<TMoreOptions & {
 	        ducks?: DUCKS_OPTIONS<TDucks>;
-	    }> & DuckOptions<this, TState, TTypes, TCreators, TSelectors>;
+	    }> & DuckOptions<this, TState & DUCKS_STATE<TDucks>, TTypes, TCreators, TSelectors>;
 	    readonly ducks: TDucks;
 	    protected eachDucks(callback: any): void;
 	    readonly reducers: {
-	        [key in keyof TState]: (state: TState[key], action: any) => TState[key];
+	        [key in keyof (TState & DUCKS_STATE<TDucks>)]: (state: (TState & DUCKS_STATE<TDucks>)[key], action: any) => (TState & DUCKS_STATE<TDucks>)[key];
 	    };
 	    readonly sagas: any[];
 	}
@@ -112,8 +116,8 @@ declare module 'saga-duck/DuckRuntime' {
 	export const END = "@@duck-runtime-end";
 	export interface DuckCmpProps<T = any> {
 	    duck: T;
-	    dispatch: (action: any) => any;
 	    store: any;
+	    dispatch: (action: any) => any;
 	}
 	export default class DuckRuntime<TState = any> {
 	    duck: Duck<TState>;

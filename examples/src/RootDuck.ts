@@ -1,4 +1,4 @@
-import { DuckMap } from "../../src";
+import { Duck, DuckMap } from "../../src";
 import { takeEvery, call, put, select } from "redux-saga/effects";
 import CounterDuck from "./CounterDuck";
 
@@ -13,13 +13,14 @@ interface Creators{
 
 }
 interface Selectors{
-
+  total: number
 }
 interface Options{
   step: number
   getStep: (...any: any[]) => number
 }
 interface Ducks{
+  [key: string]: Duck
   counter1: CounterDuck
   counter2: CounterDuck
   counter3: CounterDuck

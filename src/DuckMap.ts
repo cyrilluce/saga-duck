@@ -61,6 +61,11 @@ export type DUCKS_OPTIONS<TDucks> = {
   [key in keyof TDucks]?: DUCK_OPTION<new (...opts: any[]) => TDucks[key]>
 };
 
+export type MEMBER_OF<TObject extends Object, TKey extends keyof TObject> = TObject[TKey]
+export type DUCKS_STATE<TDucks extends Object> = {
+  [key in keyof TDucks]?: MEMBER_OF<TDucks[key], 'initialState'>
+}
+
 export default class DuckMap<
   TState = any,
   TTypes = any,
@@ -69,7 +74,7 @@ export default class DuckMap<
   TMoreOptions = {},
   TDucks = {}
 > extends Duck<
-  TState,
+  TState & DUCKS_STATE<TDucks>,
   TTypes,
   TCreators,
   TSelectors,

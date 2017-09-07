@@ -44,26 +44,28 @@ function shallowEqual(objA, objB) {
 export function shouldComponentUpdate(instance, props, state) {
     return (!shallowEqual(instance.props, props) || !shallowEqual(instance.state, state));
 }
+function shouldComponentUpdateForReplace(nextProps, nextState) {
+    return shouldComponentUpdate(this, nextProps, nextState);
+}
 export function purify(component) {
-    let Base = Component;
-    let statelessRender;
     if (typeof component.prototype.isReactComponent === "object") {
-        Base = component;
+        if (component.prototype.shouldComponentUpdate !== undefined) {
+            console.warn("purify() only use to decorate class dose not implement shouldComponentUpdate");
+        }
+        component.prototype.shouldComponentUpdate = shouldComponentUpdateForReplace;
+        return component;
     }
     else {
-        statelessRender = component;
-    }
-    class PureRender extends Base {
-        shouldComponentUpdate(nextProps, nextState) {
-            return shouldComponentUpdate(this, nextProps, nextState);
+        const statelessRender = component;
+        class PureRender extends Component {
+            render() {
+                return statelessRender(this.props);
+            }
+            shouldComponentUpdate(nextProps, nextState) {
+                return shouldComponentUpdate(this, nextProps, nextState);
+            }
         }
+        PureRender.displayName = statelessRender && statelessRender.name;
+        return PureRender;
     }
-    if (statelessRender) {
-        PureRender.prototype.render = function render() {
-            return statelessRender(this.props);
-        };
-    }
-    PureRender.displayName =
-        (statelessRender && statelessRender.name) || Base.displayName || Base.name;
-    return PureRender;
 }
