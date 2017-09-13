@@ -63,7 +63,6 @@ declare module 'saga-duck/Duck' {
 	    readonly selectors: WRAPPED_SELECTORS<TSelectors>;
 	    readonly localSelectors: SELECTORS<TSelectors, TState>;
 	    readonly sagas: (() => any)[];
-	    asState(state: any): TState;
 	    static mergeStates(oldState: any, states: any): any;
 	    static mergeReducers(...reducers: any[]): any;
 	    static mergeOption(parent: any, child: any, key: any, isArray: any, isGetter: any): any;
@@ -144,6 +143,7 @@ declare module 'saga-duck/index' {
 	export { default as DuckMap } from 'saga-duck/DuckMap';
 	export { default as DuckRuntime, DuckCmpProps, INIT, END } from 'saga-duck/DuckRuntime';
 	export { purify, shouldComponentUpdate } from 'saga-duck/purify';
+	export function asResult<T>(fn: (...any: any[]) => T, result: any): T;
 
 }
 declare module 'saga-duck' {
