@@ -63,6 +63,7 @@ declare module 'saga-duck/Duck' {
 	    readonly selectors: WRAPPED_SELECTORS<TSelectors>;
 	    readonly localSelectors: SELECTORS<TSelectors, TState>;
 	    readonly sagas: (() => any)[];
+	    asState(state: any): TState;
 	    static mergeStates(oldState: any, states: any): any;
 	    static mergeReducers(...reducers: any[]): any;
 	    static mergeOption(parent: any, child: any, key: any, isArray: any, isGetter: any): any;

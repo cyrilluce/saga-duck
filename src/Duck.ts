@@ -347,6 +347,10 @@ export default class Duck<
     const { sagas = [] } = this.options;
     return (this._sagas = sagas.map(saga => () => saga(this)));
   }
+  /** only for typescript, cast yield select(selector) to this state */
+  asState(state: any): TState {
+    return state as TState
+  }
   static mergeStates(oldState, states) {
     const newState = { ...oldState };
     let hasChanged = false;

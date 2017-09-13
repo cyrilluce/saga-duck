@@ -161,6 +161,9 @@ export default class Duck {
         const { sagas = [] } = this.options;
         return (this._sagas = sagas.map(saga => () => saga(this)));
     }
+    asState(state) {
+        return state;
+    }
     static mergeStates(oldState, states) {
         const newState = Object.assign({}, oldState);
         let hasChanged = false;
