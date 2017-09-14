@@ -327,8 +327,8 @@ export default class Duck<
     const rootSelector = this.selector;
     const interceptedSelectors = {};
     Object.keys(selectors).forEach(key => {
-      interceptedSelectors[key] = function(state) {
-        return selectors[key].call(selectors, rootSelector(state));
+      interceptedSelectors[key] = function(state, ...args) {
+        return selectors[key].call(selectors, rootSelector(state), ...args);
       };
     });
     return (this._selectors = <WRAPPED_SELECTORS<
