@@ -133,6 +133,18 @@ declare module 'saga-duck/DuckRuntime' {
 	}
 
 }
+declare module 'saga-duck/helper' {
+	export function asResult<T>(fn: (...any: any[]) => T, result: any): T;
+	export function reduceFromPayload<T>(actionType: string | number, initialState: T): (state: T, action: {
+	    type: string | number;
+	    payload?: T;
+	}) => T;
+	export function createToPayload<T>(actionType: string | number): (payload: T) => {
+	    type: string | number;
+	    payload: T;
+	};
+
+}
 declare module 'saga-duck/purify' {
 	export function shouldComponentUpdate(instance: any, props: any, state: any): boolean;
 	export function purify(component: any): any;
@@ -143,7 +155,7 @@ declare module 'saga-duck/index' {
 	export { default as DuckMap } from 'saga-duck/DuckMap';
 	export { default as DuckRuntime, DuckCmpProps, INIT, END } from 'saga-duck/DuckRuntime';
 	export { purify, shouldComponentUpdate } from 'saga-duck/purify';
-	export function asResult<T>(fn: (...any: any[]) => T, result: any): T;
+	export { asResult, reduceFromPayload, createToPayload } from 'saga-duck/helper';
 
 }
 declare module 'saga-duck' {
