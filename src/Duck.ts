@@ -74,7 +74,7 @@ export type Saga<TDuck> = (duck: TDuck) => any;
 /**
  * 本地选择器定义
  */
-export type SELECTORS<T, TState> = { [P in keyof T]: (state: TState) => T[P] };
+export type SELECTORS<T, TState> = { [P in keyof T]: (state: TState, ...any: any[]) => T[P] };
 /**
  * 已包装的全局选择器定义，直接用于全局redux store state
  */

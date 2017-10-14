@@ -9,7 +9,7 @@ declare module 'saga-duck/Duck' {
 	export type DuckSelector<TState, TGlobalState = any> = (state: TGlobalState) => TState;
 	export type Saga<TDuck> = (duck: TDuck) => any;
 	export type SELECTORS<T, TState> = {
-	    [P in keyof T]: (state: TState) => T[P];
+	    [P in keyof T]: (state: TState, ...any: any[]) => T[P];
 	};
 	export type WRAPPED_SELECTORS<T> = {
 	    [P in keyof T]: (globalState: any) => T[P];
