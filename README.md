@@ -199,3 +199,46 @@ ReactDOM.render(
   document.getElementById("root")
 );
 ```
+
+## Typescript support
+See [Duck example](./examples/src/CounterDuck.ts) and [DuckMap example](./examples/src/RootDuck.ts)
+```typescript
+import { Duck } from "../../src";
+import { takeEvery, call, put, select } from "redux-saga/effects";
+import { delay } from "redux-saga";
+
+type State = number;
+enum TYPE{
+  INCREMENT,
+  INCREMENT_IF_ODD,
+  DECREMENT,
+  INCREMENT_ASYNC
+};
+interface Creators{
+  increment(step?: number): { type: string; step: number };
+}
+interface Selectors{
+  count: number;
+}
+interface Options{
+  step?: number;
+  getStep?: () => number;
+}
+export default class MyDuck extends Duck<
+  State,
+  typeof TYPE,
+  Creators,
+  Selectors,
+  Options
+> {
+  init() {
+    super.init();
+    this.extend(
+      {
+        types: TYPE,
+        ...
+      }
+    );
+  }
+}
+```

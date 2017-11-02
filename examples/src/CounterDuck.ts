@@ -30,8 +30,8 @@ export default class MyDuck extends Duck<
   Selectors,
   Options
 > {
-  constructor() {
-    super(...arguments)
+  init() {
+    super.init();
 
     this.extend(
       {
@@ -93,9 +93,7 @@ export default class MyDuck extends Duck<
             });
           }
         ]
-      },
-      /** for extensible usage */
-      ...arguments
+      }
     );
   }
 }

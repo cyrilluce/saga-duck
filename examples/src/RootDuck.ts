@@ -33,8 +33,8 @@ export default class MyRootDuck extends DuckMap<
   Options,
   Ducks
 > {
-  constructor() {
-    super(...arguments)
+  init() {
+    super.init();
     this.extend(
       {
         /** child ducks, { [route]: ChildDuck }, can access by duck.ducks[route] */
@@ -92,8 +92,7 @@ export default class MyRootDuck extends DuckMap<
             );
           }
         ]
-      },
-      ...arguments
+      }
     );
   }
 }
