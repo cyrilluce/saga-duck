@@ -3,16 +3,27 @@
  */
 import { Component, createElement } from "react";
 import { createStore as createReduxStore, applyMiddleware } from "redux";
-import createSagaMiddleware from "redux-saga";
+import createSagaMiddleware, { SagaIterator, SagaMiddleware } from "redux-saga";
 import { connect } from "react-redux";
 import { parallel } from "redux-saga-catch";
+import Duck from "./Duck";
 
 /** Fire when React Root Component mounted */
 export const INIT = "@@duck-runtime-init";
 /** Fire when React Root Component unmounted */
 export const END = "@@duck-runtime-end";
 
-export default class DuckRuntime {
+export interface DuckCmpProps<T = any> {
+  duck: T;
+  store: any;
+  dispatch: (action: any) => any;
+}
+
+export default class DuckRuntime<TState = any> {
+  duck: Duck<TState>;
+  private middlewares: any[];
+  private sagaMiddleware: SagaMiddleware<any>;
+  public store: any;
   /**
      * 
      * @param {*} duck
@@ -35,7 +46,7 @@ export default class DuckRuntime {
     );
 
     const duck = this.duck;
-    this.store = createStore(duck.reducer);
+    this.store = createStore(<any>duck.reducer);
 
     this.addSaga(duck.sagas);
   }
@@ -44,7 +55,7 @@ export default class DuckRuntime {
      * add sagas to store, will auto run.
      * @param {Array<Saga|Generator>} sagas 
      */
-  addSaga(sagas) {
+  addSaga(sagas: Array<() => SagaIterator>) {
     this.sagaMiddleware.run(function*() {
       yield parallel(sagas);
     });
@@ -74,7 +85,7 @@ export default class DuckRuntime {
    */
   root() {
     const store = this.store;
-    return function decorate(Container) {
+    return function decorate(Container): any {
       class AttachedContainer extends Component {
         componentDidMount() {
           store.dispatch({ type: INIT });
@@ -89,10 +100,10 @@ export default class DuckRuntime {
           }
         }
         render() {
-          return createElement(Container, this.props);
+          return createElement(Container, (this as any).props);
         }
       }
-      AttachedContainer.displayName = `duckRoot(${Container.displayName ||
+      (AttachedContainer as any).displayName = `duckRoot(${Container.displayName ||
         Container.name ||
         "Unknown"})`;
       return AttachedContainer;
