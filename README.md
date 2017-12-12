@@ -28,8 +28,9 @@ import { takeEvery, call, put, select } from "redux-saga/effects";
 import { delay } from "redux-saga";
 
 export default class MyDuck extends Duck {
-  constructor() {
-    super(
+  init() {
+    super.init();
+    this.extend(
       {
         /** actionTypes */
         typeList: [
@@ -92,9 +93,7 @@ export default class MyDuck extends Duck {
             });
           }
         ]
-      },
-      /** for extensible usage */
-      ...arguments
+      }
     );
   }
 }
@@ -106,8 +105,9 @@ import { Duck } from "saga-duck";
 import Base from "./CounterDuck";
 
 export default class Duck extends Base {
-  constructor() {
-    super(
+  init() {
+    super.init();
+    this.extend(
       {
         /** custom options will be overwrite */
         step: 10,
@@ -121,8 +121,7 @@ export default class Duck extends Base {
         creators: duck => ({ more: () => ({ type: duck.types.MORE }) }),
         /** merge */
         sagas: [function*() {}]
-      },
-      ...arguments
+      }
     );
   }
 }
@@ -134,8 +133,9 @@ import { DuckMap } from "saga-duck";
 import CounterDuck from "./CounterDuck";
 
 export default class MyRootDuck extends DuckMap {
-  constructor() {
-    super(
+  init() {
+    super.init();
+    this.extend(
       {
         /** child ducks, { [route]: ChildDuck }, can access by duck.ducks[route] */
         ducks: {
@@ -176,8 +176,7 @@ export default class MyRootDuck extends DuckMap {
             
           }
         ]
-      },
-      ...arguments
+      }
     );
   }
 }
@@ -200,10 +199,66 @@ ReactDOM.render(
 );
 ```
 
+## Helpers
+### purify
+make React DuckComponent pure, only rerender when props and duck state changed.
+```javascript
+import { purify } from 'saga-duck'
+export default purify(function DuckComponent({ duck, store, dispatch }){ ... })
+```
+
+### memorize
+stabilize objects/functions reference, prevent React props unnecessary change.
+```javascript
+import { memorize } from 'saga-duck'
+const getHandler = memorize((duck, dispatch) => ()=>dispatch(duck.creators.bar()) )
+
+function Container(props){
+  const handler = gethandler(props)
+  return <Foo handler={handler} />
+}
+```
+
+### reduceFromPayload / createToPayload
+Create simple reducer / actionCreator
+```javascript
+import { reduceFromPayload, createToPayload } from 'saga-duck'
+
+const options = {
+  reducers: ({types}) => ({
+    id: reduceFromPayload(types.SET_ID, 0),
+    ...
+  }),
+  creators: ({types}) => ({
+    setId: createToPayload(types.SET_ID),
+    ...
+  })
+}
+
+// equal to
+const original = {
+  reducers: ({types}) => ({
+    id: (state=0, action)=>{
+      switch(action.type){
+        case types.SET_ID:
+          return action.payload
+        default:
+          return state
+      }
+    },
+    ...
+  }),
+  creators: ({types}) => ({
+    setId: (id)=>({ type: types.SET_ID, payload: id }),
+    ...
+  })
+}
+```
+
 ## Typescript support
 See [Duck example](./examples/src/CounterDuck.ts) and [DuckMap example](./examples/src/RootDuck.ts)
 ```typescript
-import { Duck } from "../../src";
+import { Duck, asResult } from "../../src";
 import { takeEvery, call, put, select } from "redux-saga/effects";
 import { delay } from "redux-saga";
 
@@ -237,8 +292,20 @@ export default class MyDuck extends Duck<
       {
         types: TYPE,
         ...
+        sagas: [
+          this.sagaMain
+        ]
       }
     );
+  }
+  *sagaMain(duck: this){
+    // typeof state: State
+    const state = asResult(
+      duck.selector,
+      yield select(duck.selector)
+    )
+    // for typescript limitation, in this statement `state` will be `any`
+    // const state = yield select(duck.selector)
   }
 }
 ```

@@ -20,7 +20,6 @@ interface Options{
   getStep: (...any: any[]) => number
 }
 interface Ducks{
-  [key: string]: Duck
   counter1: CounterDuck
   counter2: CounterDuck
   counter3: CounterDuck
