@@ -3,7 +3,7 @@
  */
 import { Component, createElement } from "react";
 import { createStore as createReduxStore, applyMiddleware } from "redux";
-import createSagaMiddleware, { SagaIterator, SagaMiddleware } from "redux-saga";
+import createSagaMiddleware, { SagaIterator, SagaMiddleware, Task } from "redux-saga";
 import { connect } from "react-redux";
 import { parallel } from "redux-saga-catch";
 import Duck from "./Duck";
@@ -24,6 +24,7 @@ export default class DuckRuntime<TState = any> {
   private middlewares: any[];
   private sagaMiddleware: SagaMiddleware<any>;
   public store: any;
+  private _tasks: Task[] = [];
   /**
      * 
      * @param {*} duck
@@ -56,8 +57,21 @@ export default class DuckRuntime<TState = any> {
      * @param {Array<Saga|Generator>} sagas 
      */
   addSaga(sagas: Array<() => SagaIterator>) {
-    this.sagaMiddleware.run(function*() {
+    const task = this.sagaMiddleware.run(function*() {
       yield parallel(sagas);
+    });
+    this._tasks.push(task);
+    return task;
+  }
+  /**
+   * 停止一切已添加的sagas
+   * stop every added sagas.
+   */
+  destroy(){
+    const tasks = this._tasks;
+    this._tasks = [];
+    tasks.forEach(task=>{
+      task.cancel();
     });
   }
   /**
@@ -82,8 +96,10 @@ export default class DuckRuntime<TState = any> {
   /**
    * 声明React根组件，当组件创建时，发出INIT动作；销毁时发出END动作；
    * declare root container, fire INIT action while mount, END action while unmount.
+   * @param autoDestroy 当React组件unmount时，自动销毁duckRuntime。 destroy duckRuntime when React unmount
    */
-  root() {
+  root(autoDestroy = true) {
+    const duckRuntime = this
     const store = this.store;
     return function decorate(Container): any {
       class AttachedContainer extends Component {
@@ -95,6 +111,9 @@ export default class DuckRuntime<TState = any> {
         }
         componentWillUnmount() {
           store.dispatch({ type: END });
+          if(autoDestroy){
+            duckRuntime.destroy();
+          }
           if (super.componentWillUnmount) {
             return super.componentWillUnmount(...arguments);
           }

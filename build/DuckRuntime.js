@@ -7,6 +7,7 @@ export const INIT = "@@duck-runtime-init";
 export const END = "@@duck-runtime-end";
 export default class DuckRuntime {
     constructor(duck, ...middlewares) {
+        this._tasks = [];
         this.duck = duck;
         this.middlewares = middlewares;
         this._initStore();
@@ -19,8 +20,17 @@ export default class DuckRuntime {
         this.addSaga(duck.sagas);
     }
     addSaga(sagas) {
-        this.sagaMiddleware.run(function* () {
+        const task = this.sagaMiddleware.run(function* () {
             yield parallel(sagas);
+        });
+        this._tasks.push(task);
+        return task;
+    }
+    destroy() {
+        const tasks = this._tasks;
+        this._tasks = [];
+        tasks.forEach(task => {
+            task.cancel();
         });
     }
     connect() {
@@ -32,7 +42,8 @@ export default class DuckRuntime {
             }))(Container);
         };
     }
-    root() {
+    root(autoDestroy = true) {
+        const duckRuntime = this;
         const store = this.store;
         return function decorate(Container) {
             class AttachedContainer extends Component {
@@ -44,6 +55,9 @@ export default class DuckRuntime {
                 }
                 componentWillUnmount() {
                     store.dispatch({ type: END });
+                    if (autoDestroy) {
+                        duckRuntime.destroy();
+                    }
                     if (super.componentWillUnmount) {
                         return super.componentWillUnmount(...arguments);
                     }

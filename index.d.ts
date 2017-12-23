@@ -110,7 +110,7 @@ declare module 'saga-duck/DuckMap' {
 
 }
 declare module 'saga-duck/DuckRuntime' {
-	import { SagaIterator } from "redux-saga";
+	import { SagaIterator, Task } from "redux-saga";
 	import Duck from 'saga-duck/Duck';
 	export const INIT = "@@duck-runtime-init";
 	export const END = "@@duck-runtime-end";
@@ -124,11 +124,13 @@ declare module 'saga-duck/DuckRuntime' {
 	    private middlewares;
 	    private sagaMiddleware;
 	    store: any;
+	    private _tasks;
 	    constructor(duck: any, ...middlewares: any[]);
 	    _initStore(): void;
-	    addSaga(sagas: Array<() => SagaIterator>): void;
+	    addSaga(sagas: Array<() => SagaIterator>): Task;
+	    destroy(): void;
 	    connect(): (Container: any) => any;
-	    root(): (Container: any) => any;
+	    root(autoDestroy?: boolean): (Container: any) => any;
 	    connectRoot(): (Container: any) => any;
 	}
 
