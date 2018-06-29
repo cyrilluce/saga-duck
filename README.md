@@ -256,7 +256,7 @@ const original = {
 ```
 
 ## Typescript support
-See [Duck example](./examples/src/CounterDuck.ts) and [DuckMap example](./examples/src/RootDuck.ts)
+See [Duck example](./examples/src/CounterDuck.ts) and [DuckMap example](./examples/src/RootDuck.ts), and please use typescript **2.6.1**
 ```typescript
 import { Duck, asResult } from "../../src";
 import { takeEvery, call, put, select } from "redux-saga/effects";

@@ -1,3 +1,6 @@
+declare module 'saga-duck' {
+	export * from 'saga-duck/index';
+}
 declare module 'saga-duck/Duck' {
 	export type DynamicOption<Result, TDuck> = (duck: TDuck) => Result;
 	export type StaticOption<Result> = Result;
@@ -148,8 +151,10 @@ declare module 'saga-duck/helper' {
 
 }
 declare module 'saga-duck/purify' {
+	/// <reference types="react" />
+	import { StatelessComponent, ComponentClass } from "react";
 	export function shouldComponentUpdate(instance: any, props: any, state: any): boolean;
-	export function purify(component: any): any;
+	export function purify<T>(component: StatelessComponent<T> | ComponentClass<T>): ComponentClass<T>;
 
 }
 declare module 'saga-duck/index' {
@@ -159,8 +164,4 @@ declare module 'saga-duck/index' {
 	export { purify, shouldComponentUpdate } from 'saga-duck/purify';
 	export { asResult, reduceFromPayload, createToPayload } from 'saga-duck/helper';
 
-}
-declare module 'saga-duck' {
-	import main = require('saga-duck/index');
-	export = main;
 }

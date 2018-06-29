@@ -49,11 +49,12 @@ function shouldComponentUpdateForReplace(nextProps, nextState) {
 }
 export function purify(component) {
     if (typeof component.prototype.isReactComponent === "object") {
-        if (component.prototype.shouldComponentUpdate !== undefined) {
+        const Cmp = component;
+        if (Cmp.prototype.shouldComponentUpdate !== undefined) {
             console.warn("purify() only use to decorate class dose not implement shouldComponentUpdate");
         }
-        component.prototype.shouldComponentUpdate = shouldComponentUpdateForReplace;
-        return component;
+        Cmp.prototype.shouldComponentUpdate = shouldComponentUpdateForReplace;
+        return Cmp;
     }
     else {
         const statelessRender = component;

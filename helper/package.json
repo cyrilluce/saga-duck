@@ -1,0 +1,7 @@
+{
+  "name": "saga-duck/helper",
+  "private": true,
+  "main": "../build/helper.js",
+  "module": "../build/helper.js",
+  "jsnext:main": "../build/helper.js"
+}

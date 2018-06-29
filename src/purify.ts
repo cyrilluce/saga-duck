@@ -1,4 +1,4 @@
-import { Component } from "react";
+import { Component, StatelessComponent, ComponentClass } from "react";
 
 const hasOwnProperty = Object.prototype.hasOwnProperty;
 
@@ -88,20 +88,20 @@ function shouldComponentUpdateForReplace(nextProps, nextState) {
  * Make React stateless Component Memorizeable.
  * If props.duck's local state unchange, ignore store change.
  */
-export function purify(component): any {
+export function purify<T>(component: StatelessComponent<T> | ComponentClass<T>): ComponentClass<T> {
   if (typeof component.prototype.isReactComponent === "object") {
-    if (component.prototype.shouldComponentUpdate !== undefined) {
+    const Cmp = component as  ComponentClass<T>
+    if (Cmp.prototype.shouldComponentUpdate !== undefined) {
       console.warn(
         "purify() only use to decorate class dose not implement shouldComponentUpdate"
       );
     }
     // 强制覆盖
-    component.prototype.shouldComponentUpdate = shouldComponentUpdateForReplace;
-    return component;
+    Cmp.prototype.shouldComponentUpdate = shouldComponentUpdateForReplace;
+    return Cmp;
   } else {
-    const statelessRender = component;
-    class PureRender extends Component {
-      private props: any;
+    const statelessRender = component as StatelessComponent<T>;
+    class PureRender extends Component<T> {
       render() {
         return statelessRender(this.props);
       }

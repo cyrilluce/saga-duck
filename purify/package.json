@@ -1,0 +1,7 @@
+{
+  "name": "saga-duck/purify",
+  "private": true,
+  "main": "../build/purify.js",
+  "module": "../build/purify.js",
+  "jsnext:main": "../build/purify.js"
+}
