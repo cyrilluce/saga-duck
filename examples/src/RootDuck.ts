@@ -10,7 +10,7 @@ interface Types{
   CHILD_INCREMENT: string
 }
 interface Creators{
-
+  increment()
 }
 interface Selectors{
   total: number

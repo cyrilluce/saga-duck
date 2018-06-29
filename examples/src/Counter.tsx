@@ -1,15 +1,13 @@
 import * as React from "react";
 import Duck from "./CounterDuck";
+import { DuckCmpProps } from "../../src/DuckRuntime";
+import { purify } from "../../src/purify";
 
-export default function Counter({
+export default purify(function Counter({
   duck,
   store,
   dispatch
-}: {
-  duck: Duck;
-  store: any;
-  dispatch: (any: any) => any;
-}) {
+}: DuckCmpProps<Duck>) {
   const { selectors, creators } = duck;
   const value = selectors.count(store);
   return (
@@ -25,4 +23,4 @@ export default function Counter({
       </button>
     </div>
   );
-}
+});

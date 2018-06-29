@@ -1,7 +1,9 @@
 import * as React from 'react'
 import Counter from "./Counter";
+import { DuckCmpProps } from '../../src/DuckRuntime';
+import Duck from './RootDuck'
 
-export default function Root({ duck, store, dispatch }) {
+export default function Root({ duck, store, dispatch }: DuckCmpProps<Duck>) {
   const { selectors, creators, ducks: { counter1, counter2, counter3 } } = duck;
   return (
     <div>
