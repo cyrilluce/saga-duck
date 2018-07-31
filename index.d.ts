@@ -1,6 +1,3 @@
-declare module 'saga-duck' {
-	export * from 'saga-duck/index';
-}
 declare module 'saga-duck/Duck' {
 	export type DynamicOption<Result, TDuck> = (duck: TDuck) => Result;
 	export type StaticOption<Result> = Result;
@@ -15,7 +12,7 @@ declare module 'saga-duck/Duck' {
 	    [P in keyof T]: (state: TState, ...any: any[]) => T[P];
 	};
 	export type WRAPPED_SELECTORS<T> = {
-	    [P in keyof T]: (globalState: any) => T[P];
+	    [P in keyof T]: (globalState: any, ...any: any[]) => T[P];
 	};
 	export type REDUCERS<TState> = {
 	    [key in keyof TState]: (state: TState[key], action: any) => TState[key];
@@ -164,4 +161,7 @@ declare module 'saga-duck/index' {
 	export { purify, shouldComponentUpdate } from 'saga-duck/purify';
 	export { asResult, reduceFromPayload, createToPayload } from 'saga-duck/helper';
 
+}
+declare module 'saga-duck' {
+	export * from 'saga-duck/index';
 }

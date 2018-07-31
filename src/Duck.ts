@@ -79,7 +79,7 @@ export type SELECTORS<T, TState> = { [P in keyof T]: (state: TState, ...any: any
  * 已包装的全局选择器定义，直接用于全局redux store state
  */
 export type WRAPPED_SELECTORS<T> = {
-  [P in keyof T]: (globalState: any) => T[P]
+  [P in keyof T]: (globalState: any, ...any: any[]) => T[P]
 };
 
 /**
