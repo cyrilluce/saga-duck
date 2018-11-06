@@ -151,7 +151,11 @@ declare module 'saga-duck/purify' {
 	/// <reference types="react" />
 	import { StatelessComponent, ComponentClass } from "react";
 	export function shouldComponentUpdate(instance: any, props: any, state: any): boolean;
-	export function purify<T>(component: StatelessComponent<T> | ComponentClass<T>): ComponentClass<T>;
+	export interface PurifyType {
+	    <T>(component: StatelessComponent<T>): ComponentClass<T>;
+	    <T, C extends ComponentClass<T>>(component: C): C;
+	}
+	export const purify: PurifyType;
 
 }
 declare module 'saga-duck/index' {

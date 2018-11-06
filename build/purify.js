@@ -47,7 +47,7 @@ export function shouldComponentUpdate(instance, props, state) {
 function shouldComponentUpdateForReplace(nextProps, nextState) {
     return shouldComponentUpdate(this, nextProps, nextState);
 }
-export function purify(component) {
+export const purify = function (component) {
     if (typeof component.prototype.isReactComponent === "object") {
         const Cmp = component;
         if (Cmp.prototype.shouldComponentUpdate !== undefined) {
@@ -69,4 +69,4 @@ export function purify(component) {
         PureRender.displayName = statelessRender && statelessRender.name;
         return PureRender;
     }
-}
+};

@@ -88,9 +88,16 @@ function shouldComponentUpdateForReplace(nextProps, nextState) {
  * Make React stateless Component Memorizeable.
  * If props.duck's local state unchange, ignore store change.
  */
-export function purify<T>(component: StatelessComponent<T> | ComponentClass<T>): ComponentClass<T> {
+export interface PurifyType{
+  <T>(component: StatelessComponent<T>): ComponentClass<T>
+  <T, C extends ComponentClass<T>>(
+    component: C
+  ): C
+}
+
+export const purify:PurifyType = function(component) {
   if (typeof component.prototype.isReactComponent === "object") {
-    const Cmp = component as  ComponentClass<T>
+    const Cmp = component as ComponentClass<any>
     if (Cmp.prototype.shouldComponentUpdate !== undefined) {
       console.warn(
         "purify() only use to decorate class dose not implement shouldComponentUpdate"
@@ -100,8 +107,8 @@ export function purify<T>(component: StatelessComponent<T> | ComponentClass<T>):
     Cmp.prototype.shouldComponentUpdate = shouldComponentUpdateForReplace;
     return Cmp;
   } else {
-    const statelessRender = component as StatelessComponent<T>;
-    class PureRender extends Component<T> {
+    const statelessRender = component as StatelessComponent<any>;
+    class PureRender extends Component<any> {
       render() {
         return statelessRender(this.props);
       }
