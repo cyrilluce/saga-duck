@@ -12,10 +12,7 @@ const connectWithDuck = (Component, Duck) => {
       ? [createLogger({ collapsed: true })]
       : [];
     const duckRuntime = new DuckRuntime(
-      new Duck({
-        step: 2,
-        getStep: () => 3
-      }),
+      new Duck(),
       ...middlewares
     );
     const ConnectedComponent = duckRuntime.root()(

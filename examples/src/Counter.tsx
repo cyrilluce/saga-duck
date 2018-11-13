@@ -24,10 +24,3 @@ export default purify(function Counter({
     </div>
   );
 });
-
-// @purify
-// class CouterClass extends React.Component<DuckCmpProps<Duck>, any>{
-//   render(){
-//     return <noscript />
-//   }
-// }
