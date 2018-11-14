@@ -19,7 +19,7 @@ export default class MyDuck extends Duck {
     const { types } = this;
     return {
       ...super.reducers,
-      count: (state = 0, action) => {
+      count: (state = 0, action): number => {
         switch (action.type) {
           case types.INCREMENT:
             return state + action.step;

@@ -1,5 +1,6 @@
 import Duck from "../../src/Duck";
 import DuckMap from "../../src/DuckMap";
+import { select } from "redux-saga/effects";
 
 class FooDuck extends Duck {
   get quickTypes() {
@@ -11,11 +12,11 @@ class FooDuck extends Duck {
       ...Types
     };
   }
-  get rawTypes(){
-      return {
-          ...super.quickTypes,
-          FOOO: 'FOOOO'
-      }
+  get rawTypes() {
+    return {
+      ...super.quickTypes,
+      FOOO: "FOOOO"
+    };
   }
   get reducers() {
     const { types } = this;
@@ -44,13 +45,13 @@ class FooDuck extends Duck {
       foo(state: State, a: number) {
         return state.foo;
       }
-    }
+    };
   }
 
   *saga() {
     yield* super.saga();
     this.types.FOO;
-    this.types.FOOO
+    this.types.FOOO;
     this.State.foo;
     this.selector(null).foo;
     this.selectors.foo(null, 1);
@@ -75,6 +76,15 @@ class BarDuck extends FooDuck {
       }
     };
   }
+  get rawSelectors() {
+    type State = this["State"];
+    return {
+      ...super.rawSelectors,
+      bar(state: State, a: number) {
+        return state.bar;
+      }
+    };
+  }
   get creators() {
     return {
       ...super.creators,
@@ -82,13 +92,20 @@ class BarDuck extends FooDuck {
     };
   }
   test() {
-    this.types.BAR;
-    this.State.bar;
-    this.selector(null).bar;
+    this.creators.bar()
   }
 }
 
 class FooDuckMap extends DuckMap {
+  get quickTypes() {
+    enum Types {
+      BAR
+    }
+    return {
+      ...super.quickTypes,
+      ...Types
+    };
+  }
   get reducers() {
     return {
       ...super.reducers,
@@ -103,17 +120,16 @@ class FooDuckMap extends DuckMap {
       foo1: FooDuck
     };
   }
-  get rawDucks(){
-      return {
-          ...super.rawDucks,
-          foo2: new FooDuck(this.getSubDuckOptions('foo2'))
-      }
+  get rawDucks() {
+    return {
+      ...super.rawDucks,
+      foo2: new FooDuck(this.getSubDuckOptions("foo2"))
+    };
   }
   *saga() {
     yield* super.saga();
-    this.State.foo.toExponential;
-    this.State.foo1.foo.toLowerCase;
-    this.ducks.foo1.types.FOO;
+    const { types, selector, selectors, creators, ducks } = this;
+    const state = selector(yield select());
   }
 }
 

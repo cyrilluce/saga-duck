@@ -40,9 +40,13 @@ export default class DuckMap extends Duck {
     return map;
   }
   /**
-   * **不允许扩展**，请使用quickDucks或rawDucks来定义
+   * **不允许扩展**，请使用`quickDucks`或`rawDucks`来定义
    *
-   * 获取子duck map，它从quickDucks和rawDucks生成
+   * 获取子ducks
+   * 
+   * **Disallow override**, please use `quickDucks` or `rawDucks` to define
+   * 
+   * Get sub ducks
    * @example
    * ```
 *sagaFoo(){
@@ -61,7 +65,9 @@ export default class DuckMap extends Duck {
     );
   }
   /**
-   * 快速生成子duck
+   * 根据Duck类map快速生成子ducks
+   * 
+   * Quick declare sub ducks by Duck Class map.
    * @example
    * ```
   get quickDucks() {
@@ -76,6 +82,9 @@ export default class DuckMap extends Duck {
   }
   /**
    * 手工生成子duck，它会直接合并到ducks属性上，请注意尽量不要修改内置的duck options
+   * 
+   * Manually declare sub ducks, it will directly merge to `ducks` property,
+   * reminder do not change internal duck options.
    * @example
    * ```
   get rawDucks(){

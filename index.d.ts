@@ -21,7 +21,7 @@ declare module 'saga-duck/Duck' {
 	    constructor(options?: DuckOptions);
 	    protected readonly actionTypePrefix: string;
 	    protected readonly _cacheGetters: string[];
-	    protected _makeCacheGetters(): void;
+	    private _makeCacheGetters;
 	    readonly types: TYPES<this["quickTypes"]> & this["rawTypes"];
 	    readonly quickTypes: {};
 	    readonly rawTypes: {};
@@ -119,10 +119,6 @@ declare module 'saga-duck/index' {
 	export { default as DuckRuntime, DuckCmpProps, INIT, END } from 'saga-duck/DuckRuntime';
 	export { purify, shouldComponentUpdate } from 'saga-duck/purify';
 	export { asResult, reduceFromPayload, createToPayload } from 'saga-duck/helper';
-
-}
-declare module 'saga-duck/test' {
-	export {};
 
 }
 declare module 'saga-duck' {

@@ -45,7 +45,7 @@ export default class Duck {
     return ["types", "reducers", "selectors", "creators"];
   }
   // 生成缓存getter
-  protected _makeCacheGetters() {
+  private _makeCacheGetters() {
     const me = this;
     for (const property of this._cacheGetters) {
       let descriptor = null;
