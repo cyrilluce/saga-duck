@@ -50,7 +50,7 @@ export default class DuckRuntime {
                 componentDidMount() {
                     store.dispatch({ type: INIT });
                     if (super.componentDidMount) {
-                        return super.componentDidMount(...arguments);
+                        return super.componentDidMount();
                     }
                 }
                 componentWillUnmount() {
@@ -59,7 +59,7 @@ export default class DuckRuntime {
                         duckRuntime.destroy();
                     }
                     if (super.componentWillUnmount) {
-                        return super.componentWillUnmount(...arguments);
+                        return super.componentWillUnmount();
                     }
                 }
                 render() {

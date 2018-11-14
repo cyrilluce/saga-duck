@@ -1,74 +1,55 @@
 import Duck from "./Duck";
-function getOptions(duck, options, keys) {
-    return keys.reduce((o, key) => {
-        if (typeof key === "object") {
-            Object.keys(key).forEach(childKey => {
-                const parentKey = key[childKey];
-                let opt;
-                opt = options[parentKey];
-                o[childKey] = opt;
-            });
-        }
-        else if (typeof key === "function") {
-            Object.assign(o, key(options, duck));
-        }
-        else if (key in options) {
-            o[key] = options[key];
-        }
-        return o;
-    }, {});
-}
+import { combineReducers } from "redux";
+import { fork } from "redux-saga/effects";
 export default class DuckMap extends Duck {
-    extendOptions(opt1, opt2, ...externals) {
-        return super.extendOptions(opt1, opt2, ...externals, [
-            "ducks",
-            false,
-            false
-        ]);
+    get _cacheGetters() {
+        return [...super._cacheGetters, "ducks"];
+    }
+    get State() {
+        return null;
+    }
+    getSubDuckOptions(route) {
+        const { namespace, route: parentRoute } = this.options;
+        const parentSelector = this.selector;
+        return {
+            namespace,
+            route: parentRoute ? `${parentRoute}/${route}` : route,
+            selector: state => parentSelector(state)[route]
+        };
+    }
+    makeDucks(ducks) {
+        const map = {};
+        for (const route of Object.keys(ducks)) {
+            let Duck = ducks[route];
+            map[route] = new Duck(this.getSubDuckOptions(route));
+        }
+        return map;
     }
     get ducks() {
-        if (this._ducks) {
-            return this._ducks;
+        return Object.assign({}, this.makeDucks(this.quickDucks), this.rawDucks);
+    }
+    get quickDucks() {
+        return {};
+    }
+    get rawDucks() {
+        return {};
+    }
+    get reducer() {
+        const ducksReducers = {};
+        for (const key of Object.keys(this.ducks)) {
+            ducksReducers[key] = this.ducks[key].reducer;
         }
-        const { ducks = {} } = this.options;
-        const map = {};
-        const namespace = this.namespace;
-        const parentSelector = this.selector;
-        const parentRoute = this.route;
-        Object.keys(ducks).forEach(route => {
-            let Duck = ducks[route];
-            let duckOptions = {};
-            let extendKeys = [];
-            if (Array.isArray(Duck)) {
-                [Duck, ...extendKeys] = Duck;
-                duckOptions = getOptions(this, this.options, extendKeys);
-            }
-            map[route] = new Duck(Object.assign({ namespace, route: parentRoute ? `${parentRoute}/${route}` : route, selector: state => parentSelector(state)[route] }, duckOptions));
-        });
-        return (this._ducks = map);
+        return combineReducers(Object.assign({}, this.reducers, ducksReducers));
     }
-    eachDucks(callback) {
-        const ducks = this.ducks;
-        Object.keys(ducks).forEach(route => {
-            callback(ducks[route], route);
-        });
-    }
-    get reducers() {
-        const reducers = super.reducers;
-        this.eachDucks((duck, route) => {
-            reducers[route] = duck.reducer;
-        });
-        return reducers;
-    }
-    get sagas() {
-        if (this._mapSagas) {
-            return this._mapSagas;
+    *ducksSaga() {
+        const { ducks } = this;
+        for (const key of Object.keys(ducks)) {
+            const duck = ducks[key];
+            yield fork([duck, duck.saga]);
         }
-        const mySagas = super.sagas;
-        let ducksSagas = [];
-        this.eachDucks(duck => {
-            ducksSagas = ducksSagas.concat(duck.sagas);
-        });
-        return (this._mapSagas = ducksSagas.concat(mySagas));
+    }
+    *saga() {
+        yield* super.saga();
+        yield* this.ducksSaga();
     }
 }

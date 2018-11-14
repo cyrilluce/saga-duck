@@ -20,7 +20,7 @@ export interface DuckCmpProps<T = any> {
 }
 
 export default class DuckRuntime<TState = any> {
-  duck: Duck<TState>;
+  duck: Duck;
   private middlewares: any[];
   private sagaMiddleware: SagaMiddleware<any>;
   public store: any;
@@ -106,7 +106,7 @@ export default class DuckRuntime<TState = any> {
         componentDidMount() {
           store.dispatch({ type: INIT });
           if (super.componentDidMount) {
-            return super.componentDidMount(...arguments);
+            return super.componentDidMount();
           }
         }
         componentWillUnmount() {
@@ -115,7 +115,7 @@ export default class DuckRuntime<TState = any> {
             duckRuntime.destroy();
           }
           if (super.componentWillUnmount) {
-            return super.componentWillUnmount(...arguments);
+            return super.componentWillUnmount();
           }
         }
         render() {

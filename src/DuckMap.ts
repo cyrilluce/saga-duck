@@ -1,144 +1,121 @@
-/**
- * Duck可以拥有几个子Duck，映射在不同的route上，相互隔离，同时又在一个store上行效。
- */
-import Duck, { DuckOptions } from "./Duck";
-import { SagaIterator } from "redux-saga";
-import { Action } from "redux";
+import Duck, { DuckOptions, STATE_OF_REDUCERS, REDUCER } from "./Duck";
+import { combineReducers } from "redux";
+import { fork } from "redux-saga/effects";
 
-function getOptions(duck, options, keys) {
-  return keys.reduce((o, key) => {
-    /**
-     * 可以这样定义 [Duck, 'baseUrl', {params: 'routeParams'}, (options, duck)=>({params:options.params.bind(duck)})]
-     * 字串 表示同步baseUrl配置到子Duck上
-     * 对象 表示将父配置的routeParams映射到子Duck的params配置上
-     * 函数 表示使用函数进行映射，这里请注意不要访问duck的属性（特别是ducks属性），因为可能会导致死循环。推荐仅传递引用。
-     */
-    if (typeof key === "object") {
-      Object.keys(key).forEach(childKey => {
-        const parentKey = key[childKey];
-        let opt;
-        // if (parentKey in duck) {
-        //   opt = duck[parentKey]
-        // } else {
-        opt = options[parentKey];
-        // }
-        o[childKey] = opt;
-      });
-      // } else if (key in duck) {
-      //   o[key] = duck[key]
-    } else if (typeof key === "function") {
-      Object.assign(o, key(options, duck));
-    } else if (key in options) {
-      o[key] = options[key];
-    }
-    return o;
-  }, {});
-}
-
-export type ChildDuck = { new (...any: any[]): Duck };
-export type DIRECTLY_DUCK<TDuckClass> = TDuckClass;
-
-export type PARAM_STRING = string;
-export type PARAM_MAP = { [key: string]: string };
-export type PARAM_GETTER = (opts: any, duck: any) => Object;
-export type PARAM = PARAM_STRING | PARAM_MAP | PARAM_GETTER;
-// 6个应该够用了吧？
-export type PARAM_LIST_DUCK<TDuckClass> =
-  | [TDuckClass, PARAM]
-  | [TDuckClass, PARAM, PARAM]
-  | [TDuckClass, PARAM, PARAM, PARAM]
-  | [TDuckClass, PARAM, PARAM, PARAM, PARAM]
-  | [TDuckClass, PARAM, PARAM, PARAM, PARAM, PARAM]
-  | [TDuckClass, PARAM, PARAM, PARAM, PARAM, PARAM, PARAM];
-
-export type DUCK_OPTION<TDuckClass> =
-  | DIRECTLY_DUCK<TDuckClass>
-  | PARAM_LIST_DUCK<TDuckClass>;
-/**
- * Ducks配置格式
- */
-export type DUCKS_OPTIONS<TDucks> = {
-  [key in keyof TDucks]?: DUCK_OPTION<new (...opts: any[]) => TDucks[key]>
+type DuckType<T extends Duck> = { new (options?: DuckOptions): T };
+type DUCKS_STATES<T extends Record<string, Duck>> = {
+  [key in keyof T]: T[key]["State"]
 };
-
-export type MEMBER_OF<TObject extends Object, TKey extends keyof TObject> = TObject[TKey]
-export type DUCKS_STATE<TDucks extends Object> = {
-  [key in keyof TDucks]?: MEMBER_OF<TDucks[key], 'initialState'>
-}
-
-export default class DuckMap<
-  TState = any,
-  TTypes = any,
-  TCreators = any,
-  TSelectors = any,
-  TMoreOptions = {},
-  TDucks = {}
-> extends Duck<
-  TState & DUCKS_STATE<TDucks>,
-  TTypes,
-  TCreators,
-  TSelectors,
-  TMoreOptions & { ducks?: DUCKS_OPTIONS<TDucks> }
-> {
-  private _ducks: TDucks;
-  private _mapSagas: (() => SagaIterator)[];
-  /** 提供ducks继承 */
-  protected extendOptions(opt1, opt2, ...externals) {
-    return super.extendOptions(opt1, opt2, ...externals, [
-      "ducks",
-      false,
-      false
-    ]);
+type DUCKS<T extends Record<string, DuckType<Duck>>> = {
+  [key in keyof T]: InstanceType<T[key]>
+};
+export default class DuckMap extends Duck {
+  protected get _cacheGetters() {
+    return [...super._cacheGetters, "ducks"];
   }
-  get ducks(): TDucks {
-    if (this._ducks) {
-      return this._ducks;
-    }
-    const { ducks = {} } = this.options;
-    const map = {};
-    const namespace = this.namespace;
+  get State(): STATE_OF_REDUCERS<this["reducers"]> &
+    DUCKS_STATES<this["ducks"]> {
+    return null;
+  }
+  protected getSubDuckOptions(route: string): DuckOptions {
+    const { namespace, route: parentRoute } = this.options;
     const parentSelector = this.selector;
-    const parentRoute = this.route;
-    Object.keys(ducks).forEach(route => {
+    return {
+      namespace,
+      route: parentRoute ? `${parentRoute}/${route}` : route,
+      selector: state => parentSelector(state)[route]
+    };
+  }
+  /**
+   * ducks生成工具方法
+   * this.makeDucks({foo: Foo}) => {foo: new Foo(...)}
+   * @param ducks
+   */
+  protected makeDucks<T extends Record<string, DuckType<Duck>>>(ducks: T): DUCKS<T> {
+    const map = {} as DUCKS<T>;
+    for (const route of Object.keys(ducks)) {
       let Duck = ducks[route];
-      let duckOptions = {};
-      let extendKeys = [];
-      if (Array.isArray(Duck)) {
-        [Duck, ...extendKeys] = Duck;
-        duckOptions = getOptions(this, this.options, extendKeys);
-      }
-      map[route] = new Duck({
-        namespace,
-        route: parentRoute ? `${parentRoute}/${route}` : route,
-        selector: state => parentSelector(state)[route],
-        ...duckOptions
-      });
-    });
-    return (this._ducks = <TDucks>map);
-  }
-  protected eachDucks(callback) {
-    const ducks = this.ducks;
-    Object.keys(ducks).forEach(route => {
-      callback(ducks[route], route);
-    });
-  }
-  get reducers() {
-    const reducers = super.reducers;
-    // 整合个ducks的reducer
-    this.eachDucks((duck, route) => {
-      reducers[route] = duck.reducer;
-    });
-    return reducers;
-  }
-  get sagas() {
-    if (this._mapSagas) {
-      return this._mapSagas;
+      map[route] = new Duck(this.getSubDuckOptions(route)) as any;
     }
-    const mySagas = super.sagas;
-    let ducksSagas = [];
-    this.eachDucks(duck => {
-      ducksSagas = ducksSagas.concat(duck.sagas);
+    return map;
+  }
+  /**
+   * **不允许扩展**，请使用`quickDucks`或`rawDucks`来定义
+   *
+   * 获取子ducks
+   * 
+   * **Disallow override**, please use `quickDucks` or `rawDucks` to define
+   * 
+   * Get sub ducks
+   * @example
+   * ```
+*sagaFoo(){
+  const { types, ducks } = this
+  yield takeLatest(types.FOO, function*(){
+    yield* ducks.foo.sagaFoo()
+    yield put(ducks.foo.creators.foo(''))
+  })
+}```
+   */
+  get ducks(): DUCKS<this["quickDucks"]> & this["rawDucks"] {
+    return Object.assign(
+      {},
+      this.makeDucks(this.quickDucks) as DUCKS<this["quickDucks"]>,
+      this.rawDucks
+    );
+  }
+  /**
+   * 根据Duck类map快速生成子ducks
+   * 
+   * Quick declare sub ducks by Duck Class map.
+   * @example
+   * ```
+  get quickDucks() {
+    return {
+      ...super.quickDucks,
+      foo: FooDuck
+    };
+  }```
+   */
+  get quickDucks() {
+    return {};
+  }
+  /**
+   * 手工生成子duck，它会直接合并到ducks属性上，请注意尽量不要修改内置的duck options
+   * 
+   * Manually declare sub ducks, it will directly merge to `ducks` property,
+   * reminder do not change internal duck options.
+   * @example
+   * ```
+  get rawDucks(){
+      return {
+          ...super.rawDucks,
+          foo: new FooDuck(this.getSubDuckOptions('foo'))
+      }
+  }```
+   */
+  get rawDucks() {
+    return {};
+  }
+  get reducer(): REDUCER<this["State"]> {
+    const ducksReducers = {};
+    for (const key of Object.keys(this.ducks)) {
+      ducksReducers[key] = this.ducks[key].reducer;
+    }
+    return combineReducers({
+      ...this.reducers,
+      ...ducksReducers
     });
-    return (this._mapSagas = ducksSagas.concat(mySagas));
+  }
+  private *ducksSaga() {
+    const { ducks } = this;
+    for (const key of Object.keys(ducks)) {
+      const duck = ducks[key];
+      yield fork([duck, duck.saga]);
+    }
+  }
+  *saga() {
+    yield* super.saga();
+    yield* this.ducksSaga();
   }
 }

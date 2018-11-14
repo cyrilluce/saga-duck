@@ -1,99 +1,81 @@
-import { Duck } from "../../src";
+import { Duck, reduceFromPayload } from "../../src";
 import { takeEvery, call, put, select } from "redux-saga/effects";
 import { delay } from "redux-saga";
-
-type State = number;
-enum TYPE{
-  /** 增加 */
-  INCREMENT,
-  INCREMENT_IF_ODD,
-  DECREMENT,
-  INCREMENT_ASYNC
-};
-interface Creators{
-  increment(step?: number): { type: string; step: number };
-  incrementIfOdd(): { type: string };
-  decrement(): { type: string };
-  incrementAsync(): { type: string };
-}
-interface Selectors{
-  count: number;
-}
-interface Options{
-  step?: number;
-  getStep?: () => number;
-}
-export default class MyDuck extends Duck<
-  State,
-  typeof TYPE,
-  Creators,
-  Selectors,
-  Options
-> {
-  init() {
-    super.init();
-
-    this.extend(
-      {
-        /** actionTypes */
-        types: TYPE,
-        /** single reducer */
-        reducer: (state = 0, action, duck) => {
-          const { types } = duck;
-          switch (action.type) {
-            case types.INCREMENT:
-              return state + (action.step || 1);
-            case types.INCREMENT_IF_ODD:
-              return state % 2 !== 0 ? state + 1 : state;
-            case types.DECREMENT:
-              return state - 1;
-            default:
-              return state;
-          }
-        },
-        /** extensible reducers */
-        // reducers: ({types})=({ count: (state=0, action)=>... })
-        /** selectors, will auto map current duck's state */
-        selectors: {
-          count: state => state
-        },
-        /** action creators */
-        creators: ({types}) => ({
-          increment: step => ({ type: types.INCREMENT, step }),
-          incrementIfOdd: () => ({ type: types.INCREMENT_IF_ODD }),
-          decrement: () => ({ type: types.DECREMENT }),
-          incrementAsync: () => ({ type: types.INCREMENT_ASYNC })
-        }),
-        /** custom options */
-        step: 1,
-        getStep: () => 1,
-
-        /** sagas */
-        sagas: [
-          function*({
-            types,
-            creators,
-            selector,
-            selectors,
-            localSelectors,
-            options: { step, getStep }
-          }) {
-            
-            // use types define
-            yield takeEvery(types.INCREMENT_ASYNC, function*() {
-              yield call(delay, 1000);
-              // select state of this duck
-              const state: State = yield select(selector);
-              // select some value of this duck
-              const currentNumber = yield select(selectors.count);
-              // use custom property in options
-              const incStep = (getStep && getStep()) || step;
-              // use action creators
-              yield put(creators.increment(incStep));
-            });
-          }
-        ]
+export default class MyDuck extends Duck {
+  get quickTypes() {
+    enum TYPE {
+      /** 增加 */
+      INCREMENT,
+      INCREMENT_IF_ODD,
+      DECREMENT,
+      INCREMENT_ASYNC
+    }
+    return {
+      ...super.quickTypes,
+      ...TYPE
+    };
+  }
+  get reducers() {
+    const { types } = this;
+    return {
+      ...super.reducers,
+      count: (state = 0, action): number => {
+        switch (action.type) {
+          case types.INCREMENT:
+            return state + action.step;
+          case types.INCREMENT_IF_ODD:
+            return state % 2 !== 0 ? state + action.step : state;
+          case types.DECREMENT:
+            return state - action.step;
+          default:
+            return state;
+        }
       }
-    );
+    };
+  }
+  get rawSelectors() {
+    type State = this["State"];
+    return {
+      ...super.rawSelectors,
+      count(state: State) {
+        return state.count;
+      }
+    };
+  }
+  get creators() {
+    const { types, step: defaultStep } = this;
+    return {
+      ...super.creators,
+      increment: (step = defaultStep) => ({
+        type: types.INCREMENT,
+        step
+      }),
+      incrementIfOdd: (step = defaultStep) => ({
+        type: types.INCREMENT_IF_ODD,
+        step
+      }),
+      decrement: (step = defaultStep) => ({
+        type: types.DECREMENT,
+        step
+      }),
+      incrementAsync: () => ({ type: types.INCREMENT_ASYNC })
+    };
+  }
+  get step() {
+    return 1;
+  }
+  *saga() {
+    yield* super.saga();
+    const { types, selector, selectors, creators, step } = this;
+    yield takeEvery(types.INCREMENT_ASYNC, function*() {
+      yield call(delay, 1000);
+      // select state of this duck
+      const state = selector(yield select());
+      // select some value of this duck
+      const currentNumber = selectors.count(yield select());
+      // use custom property in options
+      // use action creators
+      yield put(creators.increment(step));
+    });
   }
 }

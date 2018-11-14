@@ -1,204 +1,107 @@
 import { combineReducers } from "redux";
-function defaultCreators() {
-    return {};
-}
-function defaultReducer(state) {
-    return state;
-}
-function defaultReducers() {
-    return {};
-}
-function assignDefaults(options) {
-    return Object.assign({ typeList: [], constList: [], creators: defaultCreators, reducers: defaultReducers, selectors: {}, sagas: [] }, options);
-}
+const defaultDuckOptions = {
+    namespace: "global",
+    selector(a) {
+        return a;
+    },
+    route: ""
+};
 let idSeed = 1;
 function generateId(prefix = "SAGA-DUCK") {
     return `${prefix}-${idSeed++}`;
 }
 export default class Duck {
-    constructor(...extendOptions) {
+    constructor(options = defaultDuckOptions) {
+        this.options = options;
         this.id = generateId();
-        this.init();
-        if (extendOptions.length) {
-            extendOptions.forEach(options => {
-                this.extend(options);
-            });
-        }
-    }
-    init() {
-        this.options = assignDefaults({
-            namespace: "global",
-            route: ""
-        });
-    }
-    extend(options) {
-        const parent = this.options;
-        this.options = this.extendOptions(parent, options);
-    }
-    extendOptions(parent, child, ...extraOptionDefines) {
-        const options = Object.assign({}, parent, child);
-        const defaultOptionDefines = [
-            ["constList", true, false],
-            ["typeList", true, false],
-            ["types", false, false],
-            ["creators", false, true],
-            ["reducers", false, true],
-            ["selectors", false, false],
-            ["sagas", true, false]
-        ];
-        defaultOptionDefines
-            .concat(extraOptionDefines)
-            .forEach(([key, isArray, isGetter]) => {
-            const opt = Duck.mergeOption(parent, child, key, isArray, isGetter);
-            if (opt) {
-                options[key] = opt;
-            }
-        });
-        return options;
-    }
-    get namespace() {
-        return this.options.namespace;
-    }
-    get route() {
-        return this.options.route;
+        this._makeCacheGetters();
     }
     get actionTypePrefix() {
         const { namespace, route } = this.options;
         return route ? `${namespace}/${route}/` : `${namespace}/`;
     }
-    get types() {
-        if (this._types) {
-            return this._types;
-        }
-        const { types, typeList = [] } = this.options;
-        const prefix = this.actionTypePrefix;
-        let finalTypeList = typeList;
-        const finalTypes = {};
-        if (types) {
-            finalTypeList = finalTypeList.concat(Object.keys(types));
-        }
-        finalTypeList.forEach(type => {
-            finalTypes[type] = prefix + type;
-        });
-        return (this._types = finalTypes);
+    get _cacheGetters() {
+        return ["types", "reducers", "selectors", "creators"];
     }
-    get consts() {
-        if (this._consts) {
-            return this._consts;
-        }
-        const { constList = [] } = this.options;
-        const consts = {};
-        constList.forEach(word => {
-            consts[word] = word;
-        });
-        return (this._consts = consts);
-    }
-    get creators() {
-        if (this._creators) {
-            return this._creators;
-        }
-        const { creators = () => ({}) } = this.options;
-        return (this._creators = creators(this));
-    }
-    get initialState() {
-        if (this._initialState) {
-            return this._initialState;
-        }
-        const { initialState } = this.options;
-        return (this._initialState =
-            typeof initialState === "function" ? initialState(this) : initialState);
-    }
-    get reducer() {
-        if (this._reducer) {
-            return this._reducer;
-        }
-        const reducers = this.reducers;
-        const reducerList = [];
-        if (Object.keys(reducers).length > 0) {
-            reducerList.push(combineReducers(this.reducers));
-        }
-        const { reducer } = this.options;
-        if (reducer) {
-            reducerList.push((state = this.initialState, action) => {
-                return reducer(state, action, this);
+    _makeCacheGetters() {
+        const me = this;
+        for (const property of this._cacheGetters) {
+            let descriptor = null;
+            let target = this;
+            while (!descriptor) {
+                target = Object.getPrototypeOf(target);
+                if (!target) {
+                    break;
+                }
+                descriptor = Object.getOwnPropertyDescriptor(target, property);
+            }
+            if (!descriptor) {
+                continue;
+            }
+            let cache;
+            Object.defineProperty(this, property, {
+                get() {
+                    if (!cache) {
+                        cache = descriptor.get.call(me);
+                    }
+                    return cache;
+                }
             });
         }
-        return (this._reducer = Duck.mergeReducers(...reducerList));
+    }
+    get types() {
+        return Object.assign({}, this.makeTypes(this.quickTypes), this.rawTypes);
+    }
+    get quickTypes() {
+        return {};
+    }
+    get rawTypes() {
+        return {};
+    }
+    makeTypes(typeEnum) {
+        const prefix = this.actionTypePrefix;
+        let typeList = Object.keys(typeEnum);
+        const types = {};
+        if (typeEnum) {
+            typeList = typeList.concat(Object.keys(typeEnum));
+        }
+        typeList.forEach(type => {
+            types[type] = prefix + type;
+        });
+        return types;
     }
     get reducers() {
-        const { reducers } = this.options;
-        return reducers(this);
+        return {};
+    }
+    get reducer() {
+        return combineReducers(this.reducers);
+    }
+    get State() {
+        return null;
     }
     get selector() {
-        if (this._selector) {
-            return this._selector;
-        }
-        const { route, selector } = this.options;
-        return (this._selector =
-            selector || (route && (state => state[route])) || (state => state));
+        return this.options.selector;
     }
     get selectors() {
-        if (this._selectors) {
-            return this._selectors;
+        const { selector, rawSelectors } = this;
+        const selectors = {};
+        for (const key of Object.keys(rawSelectors)) {
+            selectors[key] = (globalState, ...rest) => rawSelectors[key](selector(globalState), ...rest);
         }
-        const { selectors = {} } = this.options;
-        const rootSelector = this.selector;
-        const interceptedSelectors = {};
-        Object.keys(selectors).forEach(key => {
-            interceptedSelectors[key] = function (state, ...args) {
-                return selectors[key].call(selectors, rootSelector(state), ...args);
-            };
-        });
-        return (this._selectors = interceptedSelectors);
+        return selectors;
+    }
+    get rawSelectors() {
+        return {};
     }
     get localSelectors() {
-        return this.options.selectors;
+        return this.rawSelectors;
     }
+    get creators() {
+        return {};
+    }
+    *saga() { }
     get sagas() {
-        if (this._sagas) {
-            return this._sagas;
-        }
-        const { sagas = [] } = this.options;
-        return (this._sagas = sagas.map(saga => () => saga(this)));
-    }
-    static mergeStates(oldState, states) {
-        const newState = Object.assign({}, oldState);
-        let hasChanged = false;
-        states.forEach(myState => {
-            if (myState !== oldState) {
-                hasChanged = true;
-                Object.assign(newState, myState);
-            }
-        });
-        return hasChanged ? newState : oldState;
-    }
-    static mergeReducers(...reducers) {
-        if (!reducers.length) {
-            return defaultReducer;
-        }
-        if (reducers.length === 1) {
-            return reducers[0];
-        }
-        return (state, action, ...extras) => {
-            return Duck.mergeStates(state, reducers.map(reducer => reducer(state, action, ...extras)));
-        };
-    }
-    static mergeOption(parent, child, key, isArray, isGetter) {
-        if (!(key in child) || !(key in parent)) {
-            return null;
-        }
-        const a = parent[key];
-        const b = child[key];
-        if (isGetter) {
-            const isFnA = typeof a === "function";
-            const isFnB = typeof b === "function";
-            return duck => {
-                const av = isFnA ? a(duck) : a;
-                const bv = isFnB ? b(duck) : b;
-                return isArray ? [...av, ...bv] : Object.assign({}, av, bv);
-            };
-        }
-        return isArray ? [...a, ...b] : Object.assign({}, a, b);
+        return [this.saga.bind(this)];
     }
     static memorize(fn) {
         const cacheKey = "_sagaDuckMemorized";
