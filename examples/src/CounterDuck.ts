@@ -2,7 +2,7 @@ import { Duck, reduceFromPayload } from "../../src";
 import { takeEvery, call, put, select } from "redux-saga/effects";
 import { delay } from "redux-saga";
 export default class MyDuck extends Duck {
-  get rawTypes() {
+  get quickTypes() {
     enum TYPE {
       /** 增加 */
       INCREMENT,
@@ -11,7 +11,7 @@ export default class MyDuck extends Duck {
       INCREMENT_ASYNC
     }
     return {
-      ...super.rawTypes,
+      ...super.quickTypes,
       ...TYPE
     };
   }
@@ -42,10 +42,10 @@ export default class MyDuck extends Duck {
       }
     };
   }
-  get rawCreators() {
+  get creators() {
     const { types, step: defaultStep } = this;
     return {
-      ...super.rawCreators,
+      ...super.creators,
       increment: (step = defaultStep) => ({
         type: types.INCREMENT,
         step

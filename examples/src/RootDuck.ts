@@ -35,12 +35,12 @@ class CounterStep3Duck extends CounterDuck{
   }
 }
 export default class MyRootDuck extends DuckMap{
-  get rawTypes(){
+  get quickTypes(){
     enum Types{
       "INCREMENT", "CHILD_INCREMENT"
     }
     return {
-      ...super.rawTypes,
+      ...super.quickTypes,
       ...Types
     }
   }
@@ -64,15 +64,15 @@ export default class MyRootDuck extends DuckMap{
       total: state => state.total
     }
   }
-  get rawCreators(){
+  get creators(){
     return {
-      ...super.rawCreators,
+      ...super.creators,
       increment: () => ({ type: this.types.INCREMENT })
     }
   }
-  get rawDucks(){
+  get quickDucks(){
     return {
-      ...super.rawDucks,
+      ...super.quickDucks,
       counter1: CounterDuck,
       counter2: CounterStep2Duck,
       counter3: CounterStep3Duck

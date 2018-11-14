@@ -13,6 +13,6 @@
     },
     "compileOnSave": true,
     "include": [
-        "src/**/*"
+        "src/**/*", "examples/src/*"
     ]
   }

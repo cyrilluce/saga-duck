@@ -1,4 +1,4 @@
-import Duck, { DuckOptions, STATE_OF_REDUCERS, REDUCER, once } from "./Duck";
+import Duck, { DuckOptions, STATE_OF_REDUCERS, REDUCER } from "./Duck";
 import { combineReducers } from "redux";
 import { fork } from "redux-saga/effects";
 
@@ -10,11 +10,14 @@ type DUCKS<T extends Record<string, DuckType<Duck>>> = {
   [key in keyof T]: InstanceType<T[key]>
 };
 export default class DuckMap extends Duck {
+  protected get _cacheGetters() {
+    return [...super._cacheGetters, "ducks"];
+  }
   get State(): STATE_OF_REDUCERS<this["reducers"]> &
     DUCKS_STATES<this["ducks"]> {
     return null;
   }
-  getSubDuckOptions(route: string): DuckOptions {
+  protected getSubDuckOptions(route: string): DuckOptions {
     const { namespace, route: parentRoute } = this.options;
     const parentSelector = this.selector;
     return {
@@ -25,10 +28,10 @@ export default class DuckMap extends Duck {
   }
   /**
    * ducks生成工具方法
-   * this.makeDucks({foo: Foo}) =>
+   * this.makeDucks({foo: Foo}) => {foo: new Foo(...)}
    * @param ducks
    */
-  makeDucks<T extends Record<string, DuckType<Duck>>>(ducks: T): DUCKS<T> {
+  protected makeDucks<T extends Record<string, DuckType<Duck>>>(ducks: T): DUCKS<T> {
     const map = {} as DUCKS<T>;
     for (const route of Object.keys(ducks)) {
       let Duck = ducks[route];
@@ -36,10 +39,52 @@ export default class DuckMap extends Duck {
     }
     return map;
   }
-  @once
-  get ducks(): DUCKS<this["rawDucks"]> {
-    return this.makeDucks(this.rawDucks) as DUCKS<this["rawDucks"]>;
+  /**
+   * **不允许扩展**，请使用quickDucks或rawDucks来定义
+   *
+   * 获取子duck map，它从quickDucks和rawDucks生成
+   * @example
+   * ```
+*sagaFoo(){
+  const { types, ducks } = this
+  yield takeLatest(types.FOO, function*(){
+    yield* ducks.foo.sagaFoo()
+    yield put(ducks.foo.creators.foo(''))
+  })
+}```
+   */
+  get ducks(): DUCKS<this["quickDucks"]> & this["rawDucks"] {
+    return Object.assign(
+      {},
+      this.makeDucks(this.quickDucks) as DUCKS<this["quickDucks"]>,
+      this.rawDucks
+    );
   }
+  /**
+   * 快速生成子duck
+   * @example
+   * ```
+  get quickDucks() {
+    return {
+      ...super.quickDucks,
+      foo: FooDuck
+    };
+  }```
+   */
+  get quickDucks() {
+    return {};
+  }
+  /**
+   * 手工生成子duck，它会直接合并到ducks属性上，请注意尽量不要修改内置的duck options
+   * @example
+   * ```
+  get rawDucks(){
+      return {
+          ...super.rawDucks,
+          foo: new FooDuck(this.getSubDuckOptions('foo'))
+      }
+  }```
+   */
   get rawDucks() {
     return {};
   }
@@ -53,7 +98,7 @@ export default class DuckMap extends Duck {
       ...ducksReducers
     });
   }
-  *ducksSaga() {
+  private *ducksSaga() {
     const { ducks } = this;
     for (const key of Object.keys(ducks)) {
       const duck = ducks[key];

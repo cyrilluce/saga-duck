@@ -8,6 +8,10 @@
   dependencies:
     regenerator-runtime "^0.12.0"
 
+"@types/node@^10.12.7":
+  version "10.12.7"
+  resolved "http://r.tnpm.oa.com/@types/node/download/@types/node-10.12.7.tgz#195808b2d4b2e7c33e75e7d9b24aeee88f94660d"
+
 "@types/prop-types@*":
   version "15.5.6"
   resolved "http://r.tnpm.oa.com/@types/prop-types/download/@types/prop-types-15.5.6.tgz#9c03d3fed70a8d517c191b7734da2879b50ca26c"

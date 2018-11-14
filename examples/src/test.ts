@@ -1,15 +1,21 @@
-import Duck from "./Duck";
-import DuckMap from "./DuckMap";
+import Duck from "../../src/Duck";
+import DuckMap from "../../src/DuckMap";
 
 class FooDuck extends Duck {
-  get rawTypes() {
+  get quickTypes() {
     enum Types {
       FOO
     }
     return {
-      ...super.rawTypes,
+      ...super.quickTypes,
       ...Types
     };
+  }
+  get rawTypes(){
+      return {
+          ...super.quickTypes,
+          FOOO: 'FOOOO'
+      }
   }
   get reducers() {
     const { types } = this;
@@ -25,9 +31,9 @@ class FooDuck extends Duck {
       }
     };
   }
-  get rawCreators() {
+  get creators() {
     return {
-      ...super.rawCreators,
+      ...super.creators,
       foo() {}
     };
   }
@@ -44,6 +50,7 @@ class FooDuck extends Duck {
   *saga() {
     yield* super.saga();
     this.types.FOO;
+    this.types.FOOO
     this.State.foo;
     this.selector(null).foo;
     this.selectors.foo(null, 1);
@@ -51,12 +58,12 @@ class FooDuck extends Duck {
 }
 
 class BarDuck extends FooDuck {
-  get rawTypes() {
+  get quickTypes() {
     enum Types {
       BAR
     }
     return {
-      ...super.rawTypes,
+      ...super.quickTypes,
       ...Types
     };
   }
@@ -68,9 +75,9 @@ class BarDuck extends FooDuck {
       }
     };
   }
-  get rawCreators() {
+  get creators() {
     return {
-      ...super.rawCreators,
+      ...super.creators,
       bar() {}
     };
   }
@@ -90,11 +97,17 @@ class FooDuckMap extends DuckMap {
       }
     };
   }
-  get rawDucks() {
+  get quickDucks() {
     return {
-      ...super.rawDucks,
+      ...super.quickDucks,
       foo1: FooDuck
     };
+  }
+  get rawDucks(){
+      return {
+          ...super.rawDucks,
+          foo2: new FooDuck(this.getSubDuckOptions('foo2'))
+      }
   }
   *saga() {
     yield* super.saga();
@@ -105,12 +118,12 @@ class FooDuckMap extends DuckMap {
 }
 
 class BarDuckMap extends FooDuckMap {
-  get rawTypes() {
-    return { ...super.rawTypes, FUN: 1 };
+  get quickTypes() {
+    return { ...super.quickTypes, FUN: 1 };
   }
-  get rawDucks() {
+  get quickDucks() {
     return {
-      ...super.rawDucks,
+      ...super.quickDucks,
       bar1: BarDuck
     };
   }
