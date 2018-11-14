@@ -45,7 +45,8 @@
     "saga",
     "duck",
     "extensible",
-    "composable"
+    "composable",
+    "typescript"
   ],
   "files": [
     "src",
@@ -61,5 +62,5 @@
   "bugs": {
     "url": "https://github.com/cyrilluce/saga-duck/issues"
   },
-  "homepage": "https://cyrilluce.gitbooks.io/saga-duck/content"
+  "homepage": "https://cyrilluce.gitbook.io/saga-duck"
 }
