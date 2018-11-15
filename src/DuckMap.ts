@@ -1,10 +1,10 @@
-import Duck, { DuckOptions, STATE_OF_REDUCERS, REDUCER } from "./Duck";
+import Duck, { DuckOptions, COMBINE_REDUCERS } from "./Duck";
 import { combineReducers } from "redux";
 import { fork } from "redux-saga/effects";
 
 type DuckType<T extends Duck> = { new (options?: DuckOptions): T };
-type DUCKS_STATES<T extends Record<string, Duck>> = {
-  [key in keyof T]: T[key]["State"]
+type DUCKS_REDUCERS<T extends Record<string, Duck>> = {
+  [key in keyof T]: T[key]["reducer"]
 };
 type DUCKS<T extends Record<string, DuckType<Duck>>> = {
   [key in keyof T]: InstanceType<T[key]>
@@ -12,10 +12,6 @@ type DUCKS<T extends Record<string, DuckType<Duck>>> = {
 export default class DuckMap extends Duck {
   protected get _cacheGetters() {
     return [...super._cacheGetters, "ducks"];
-  }
-  get State(): STATE_OF_REDUCERS<this["reducers"]> &
-    DUCKS_STATES<this["ducks"]> {
-    return null;
   }
   protected getSubDuckOptions(route: string): DuckOptions {
     const { namespace, route: parentRoute } = this.options;
@@ -97,7 +93,7 @@ export default class DuckMap extends Duck {
   get rawDucks() {
     return {};
   }
-  get reducer(): REDUCER<this["State"]> {
+  get reducer():  COMBINE_REDUCERS<this['reducers'] & DUCKS_REDUCERS<this['ducks']>> {
     const ducksReducers = {};
     for (const key of Object.keys(this.ducks)) {
       ducksReducers[key] = this.ducks[key].reducer;

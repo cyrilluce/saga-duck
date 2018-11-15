@@ -3,10 +3,13 @@
  * @author cluezhang
  */
 import { combineReducers } from "redux";
-export type STATE_OF_REDUCERS<REDUCERS extends { [key: string]: () => any }> = {
+export type COMBINE_REDUCERS<T extends { [key: string]: () => any }> = (
+  state: STATE_OF_REDUCERS<T>,
+  action
+) => STATE_OF_REDUCERS<T>;
+type STATE_OF_REDUCERS<REDUCERS extends { [key: string]: () => any }> = {
   [key in keyof REDUCERS]: ReturnType<REDUCERS[key]>
 };
-export type REDUCER<TState> = (state: TState, action: any) => TState;
 type GLOBAL_SELECTOR<T> = T extends (state: any, ...rest: infer U) => infer K
   ? (globalState: any, ...rest: U) => K
   : never;
@@ -187,7 +190,7 @@ get reducers(){
     return {};
   }
   /** 内部属性，仅供父Duck或Redux store使用 Interal property, only use for parent Duck or Redux store.*/
-  get reducer(): REDUCER<this["State"]> {
+  get reducer(): COMBINE_REDUCERS<this['reducers']> {
     return combineReducers(this.reducers);
   }
   /** 
@@ -200,7 +203,7 @@ get reducers(){
     const state: State = xxx
 }
    */
-  get State(): STATE_OF_REDUCERS<this["reducers"]> {
+  get State(): ReturnType<this["reducer"]> {
     return null;
   }
   // ----------------------- selector/selectors ---------------------
