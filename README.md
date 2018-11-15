@@ -31,13 +31,11 @@ import { Duck } from "saga-duck";
 import { takeEvery, call, put, select } from "redux-saga/effects";
 import { delay } from "redux-saga";
 
-export default class MyDuck extends Duck {
+class SingleDuck extends Duck {
   get quickTypes() {
     return {
       ...super.quickTypes,
       INCREMENT: 1,
-      INCREMENT_IF_ODD: 1,
-      DECREMENT: 1,
       INCREMENT_ASYNC: 1
     };
   }
@@ -48,59 +46,21 @@ export default class MyDuck extends Duck {
       count: (state = 0, action) => {
         switch (action.type) {
           case types.INCREMENT:
-            return state + action.step;
-          case types.INCREMENT_IF_ODD:
-            return state % 2 !== 0 ? state + action.step : state;
-          case types.DECREMENT:
-            return state - action.step;
+            return state + 1;
           default:
             return state;
         }
       }
     };
   }
-  get rawSelectors() {
-    return {
-      ...super.rawSelectors,
-      count(state) {
-        return state.count;
-      }
-    };
-  }
-  get creators() {
-    const { types, step: defaultStep } = this;
-    return {
-      ...super.creators,
-      increment: (step = defaultStep) => ({
-        type: types.INCREMENT,
-        step
-      }),
-      incrementIfOdd: (step = defaultStep) => ({
-        type: types.INCREMENT_IF_ODD,
-        step
-      }),
-      decrement: (step = defaultStep) => ({
-        type: types.DECREMENT,
-        step
-      }),
-      incrementAsync: () => ({ type: types.INCREMENT_ASYNC })
-    };
-  }
-  get step() {
-    return 1;
-  }
   *saga() {
     yield* super.saga();
-    const { types, selector, selectors, creators, step } = this;
+    const { types, selector } = this;
     yield takeEvery(types.INCREMENT_ASYNC, function*() {
       yield call(delay, 1000);
       // select state of this duck
-      const state = selector(yield select());
-      // select some value of this duck
-      const currentNumber = selectors.count(yield select());
-      // use custom property in options
-      // use action creators
-      yield put(creators.increment(step));
+      const { count } = selector(yield select());
+      yield put({type: types.INCREMENT});
     });
   }
 }
@@ -108,13 +68,7 @@ export default class MyDuck extends Duck {
 
 ## extend duck
 ```js
-import { Duck } from "saga-duck";
-import Base from "./CounterDuck";
-
-export default class Duck extends Base {
-  get step(){
-    return 10
-  }
+class ExtendedDuck extends SingleDuck {
   get quickTypes(){
     return {
       ...super.quickTypes,
@@ -146,77 +100,50 @@ export default class Duck extends Base {
       }
     }
   }
+  *saga(){
+    yield* super.saga()
+    const { types, selector, selectors, creators } = this
+    yield take([types.INCREMENT, types.MORE])
+    const { count, more } = selector(yield select())
+    const _more = selectors.more(yield select())
+    yield put(creators.more())
+  }
 }
 ```
 
 ## compose ducks
 ```js
-import { DuckMap } from "saga-duck";
-import CounterDuck from "./CounterDuck";
+import { ComposableDuck } from "saga-duck";
 
-export default class MyRootDuck extends DuckMap{
-  get quickTypes(){
+class ComposedDuck extends ComposableDuck {
+  get quickTypes() {
     return {
       ...super.quickTypes,
-      "INCREMENT": 1, 
-      "CHILD_INCREMENT": 1
-    }
+      PARENT: 1
+    };
   }
-  get reducers(){
-    const {types}=this
-    return {
-      ...super.reducers,
-      total: (state = 0, action) => {
-        switch (action.type) {
-          case types.CHILD_INCREMENT:
-            return state + 1;
-          default:
-            return state;
-        }
-      }
-    }
-  }
-  get rawSelectors(){
-    return {
-      ...super.rawSelectors,
-      total: state => state.total
-    }
-  }
-  get creators(){
-    return {
-      ...super.creators,
-      increment: () => ({ type: this.types.INCREMENT })
-    }
-  }
-  get quickDucks(){
+  get quickDucks() {
     return {
       ...super.quickDucks,
-      counter1: CounterDuck,
-      counter2: CounterStep2Duck,
-      counter3: CounterStep3Duck
-    }
+      duck1: SingleDuck,
+      duck2: ExtendedDuck,
+      duck3: ExtendedDuck
+    };
   }
-  *saga(){
-    yield* super.saga()
-    const { types, ducks: { counter1, counter2, counter3 } }=this
-      // Increment all counters
-      yield takeEvery(types.INCREMENT, function*() {
-        yield put(counter1.creators.increment());
-        yield put(counter2.creators.increment());
-        yield put(counter3.creators.increment());
-      });
-
-      // Count child counters increments
-      yield takeEvery(
-        [
-          counter1.types.INCREMENT,
-          counter2.types.INCREMENT,
-          counter3.types.INCREMENT
-        ],
-        function*() {
-          yield put({ type: types.CHILD_INCREMENT });
-        }
-      );
+  *saga() {
+    yield* super.saga();
+    const {
+      types,
+      selector,
+      ducks: { duck1, duck2, duck3 }
+    } = this;
+    yield takeEvery(types.PARENT, function*() {
+      yield put({ type: duck1.types.INCREMENT });
+      yield put(duck2.creators.more());
+      yield put(duck3.creators.more());
+    });
+    // { parent, duck1: {count}, duck2: {count, more}, duck3: {count, more} }
+    const state = selector(yield select());
   }
 }
 ```
