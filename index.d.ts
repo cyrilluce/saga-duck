@@ -1,10 +1,19 @@
-declare module 'saga-duck/Duck' {
-	export type STATE_OF_REDUCERS<REDUCERS extends {
-	    [key: string]: () => any;
-	}> = {
-	    [key in keyof REDUCERS]: ReturnType<REDUCERS[key]>;
+declare module 'saga-duck/helper' {
+	export function asResult<T>(fn: (...any: any[]) => T, result: any): T;
+	export function reduceFromPayload<T>(actionType: string | number, initialState: T): (state: T, action: {
+	    type: string | number;
+	    payload?: T;
+	}) => T;
+	export function createToPayload<T>(actionType: string | number): (payload: T) => {
+	    type: string | number;
+	    payload: T;
 	};
-	export type REDUCER<TState> = (state: TState, action: any) => TState; type GLOBAL_SELECTOR<T> = T extends (state: any, ...rest: infer U) => infer K ? (globalState: any, ...rest: U) => K : never; type GLOBAL_SELECTORS<T> = {
+	export function memorize<T>(fn: (duck: any, dispatch: any) => T): (reactInstanceOrProps: any) => T;
+	export function generateId(prefix?: string): string;
+
+}
+declare module 'saga-duck/BaseDuck' {
+	import { memorize } from 'saga-duck/helper'; type GLOBAL_SELECTOR<T> = T extends (state: any, ...rest: infer U) => infer K ? (globalState: any, ...rest: U) => K : never; type GLOBAL_SELECTORS<T> = {
 	    [key in keyof T]: GLOBAL_SELECTOR<T[key]>;
 	};
 	export interface DuckOptions {
@@ -15,7 +24,7 @@ declare module 'saga-duck/Duck' {
 	export type TYPES<T> = {
 	    readonly [P in keyof T]: string;
 	};
-	export default class Duck {
+	export default abstract class BaseDuck {
 	    protected options: DuckOptions;
 	    protected id: string;
 	    constructor(options?: DuckOptions);
@@ -26,9 +35,8 @@ declare module 'saga-duck/Duck' {
 	    readonly quickTypes: {};
 	    readonly rawTypes: {};
 	    protected makeTypes<T>(typeEnum: T): TYPES<T>;
-	    readonly reducers: {};
-	    readonly reducer: REDUCER<this["State"]>;
-	    readonly State: STATE_OF_REDUCERS<this["reducers"]>;
+	    abstract readonly reducer: any;
+	    readonly State: ReturnType<this["reducer"]>;
 	    readonly selector: (globalState: any) => this["State"];
 	    readonly selectors: GLOBAL_SELECTORS<this["rawSelectors"]>;
 	    readonly rawSelectors: {};
@@ -36,29 +44,44 @@ declare module 'saga-duck/Duck' {
 	    readonly creators: {};
 	    saga(): IterableIterator<any>;
 	    readonly sagas: any[];
-	    static memorize<T>(fn: (duck: any, dispatch: any) => T): (reactInstanceOrProps: any) => T;
+	    static memorize: typeof memorize;
 	}
-	export const memorize: typeof Duck.memorize;
 	export {};
 
 }
-declare module 'saga-duck/DuckMap' {
-	import Duck, { DuckOptions, STATE_OF_REDUCERS, REDUCER } from 'saga-duck/Duck'; type DuckType<T extends Duck> = {
+declare module 'saga-duck/Duck' {
+	import BaseDuck from 'saga-duck/BaseDuck';
+	export type COMBINE_REDUCERS<T extends {
+	    [key: string]: () => any;
+	}> = (state: STATE_OF_REDUCERS<T>, action: any) => STATE_OF_REDUCERS<T>; type STATE_OF_REDUCERS<REDUCERS extends {
+	    [key: string]: () => any;
+	}> = {
+	    [key in keyof REDUCERS]: ReturnType<REDUCERS[key]>;
+	};
+	export default class Duck extends BaseDuck {
+	    readonly reducers: {};
+	    readonly reducer: COMBINE_REDUCERS<this['reducers']>;
+	}
+	export {};
+
+}
+declare module 'saga-duck/ComposableDuck' {
+	import { DuckOptions } from 'saga-duck/BaseDuck';
+	import Duck, { COMBINE_REDUCERS } from 'saga-duck/Duck'; type DuckType<T extends Duck> = {
 	    new (options?: DuckOptions): T;
-	}; type DUCKS_STATES<T extends Record<string, Duck>> = {
-	    [key in keyof T]: T[key]["State"];
+	}; type DUCKS_REDUCERS<T extends Record<string, Duck>> = {
+	    [key in keyof T]: T[key]["reducer"];
 	}; type DUCKS<T extends Record<string, DuckType<Duck>>> = {
 	    [key in keyof T]: InstanceType<T[key]>;
 	};
-	export default class DuckMap extends Duck {
+	export default class ComposableDuck extends Duck {
 	    protected readonly _cacheGetters: string[];
-	    readonly State: STATE_OF_REDUCERS<this["reducers"]> & DUCKS_STATES<this["ducks"]>;
 	    protected getSubDuckOptions(route: string): DuckOptions;
 	    protected makeDucks<T extends Record<string, DuckType<Duck>>>(ducks: T): DUCKS<T>;
 	    readonly ducks: DUCKS<this["quickDucks"]> & this["rawDucks"];
 	    readonly quickDucks: {};
 	    readonly rawDucks: {};
-	    readonly reducer: REDUCER<this["State"]>;
+	    readonly reducer: COMBINE_REDUCERS<this["reducers"] & DUCKS_REDUCERS<this["ducks"]>>;
 	    private ducksSaga;
 	    saga(): IterableIterator<any>;
 	}
@@ -91,18 +114,6 @@ declare module 'saga-duck/DuckRuntime' {
 	}
 
 }
-declare module 'saga-duck/helper' {
-	export function asResult<T>(fn: (...any: any[]) => T, result: any): T;
-	export function reduceFromPayload<T>(actionType: string | number, initialState: T): (state: T, action: {
-	    type: string | number;
-	    payload?: T;
-	}) => T;
-	export function createToPayload<T>(actionType: string | number): (payload: T) => {
-	    type: string | number;
-	    payload: T;
-	};
-
-}
 declare module 'saga-duck/purify' {
 	import { StatelessComponent, ComponentClass } from "react";
 	export function shouldComponentUpdate(instance: any, props: any, state: any): boolean;
@@ -114,11 +125,12 @@ declare module 'saga-duck/purify' {
 
 }
 declare module 'saga-duck/index' {
-	export { default as Duck, memorize } from 'saga-duck/Duck';
-	export { default as DuckMap } from 'saga-duck/DuckMap';
+	export { default as BaseDuck } from 'saga-duck/BaseDuck';
+	export { default as Duck } from 'saga-duck/Duck';
+	export { default as ComposableDuck, default as DuckMap } from 'saga-duck/ComposableDuck';
 	export { default as DuckRuntime, DuckCmpProps, INIT, END } from 'saga-duck/DuckRuntime';
 	export { purify, shouldComponentUpdate } from 'saga-duck/purify';
-	export { asResult, reduceFromPayload, createToPayload } from 'saga-duck/helper';
+	export { asResult, reduceFromPayload, createToPayload, memorize } from 'saga-duck/helper';
 
 }
 declare module 'saga-duck' {
