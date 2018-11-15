@@ -1,6 +1,21 @@
+import BaseDuck from '../../src/BaseDuck'
 import Duck from "../../src/Duck";
-import DuckMap from "../../src/DuckMap";
+import ComposableDuck from "../../src/ComposableDuck";
 import { select } from "redux-saga/effects";
+
+type SimpleState = number
+class FooSimpleDuck extends BaseDuck{
+  get reducer(){
+    return (state: SimpleState, action)=>{
+      return state
+    }
+  }
+  *saga(){
+    yield* super.saga()
+    const state = this.selector(yield select())
+    state.toExponential // SimpleState = number
+  }
+}
 
 class FooDuck extends Duck {
   get quickTypes() {
@@ -96,7 +111,7 @@ class BarDuck extends FooDuck {
   }
 }
 
-class FooDuckMap extends DuckMap {
+class FooDuckMap extends ComposableDuck {
   get quickTypes() {
     enum Types {
       BAR

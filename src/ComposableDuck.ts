@@ -1,4 +1,5 @@
-import Duck, { DuckOptions, COMBINE_REDUCERS } from "./Duck";
+import { DuckOptions } from "./BaseDuck";
+import Duck, { COMBINE_REDUCERS } from "./Duck";
 import { combineReducers } from "redux";
 import { fork } from "redux-saga/effects";
 
@@ -9,7 +10,14 @@ type DUCKS_REDUCERS<T extends Record<string, Duck>> = {
 type DUCKS<T extends Record<string, DuckType<Duck>>> = {
   [key in keyof T]: InstanceType<T[key]>
 };
-export default class DuckMap extends Duck {
+/**
+ * 支持组合多个子Duck（`ducks`）的Duck，同时它自身也支持`reducers`，
+ * 但需注意相同`route`下，`ducks`会覆盖`reducers`的状态
+ *
+ * Duck support compose multi sub duck(`ducks`), also support `reducers`,
+ * but reminder with same `route`, `ducks` will override `reducers`'s state.
+ */
+export default class ComposableDuck extends Duck {
   protected get _cacheGetters() {
     return [...super._cacheGetters, "ducks"];
   }
@@ -27,7 +35,9 @@ export default class DuckMap extends Duck {
    * this.makeDucks({foo: Foo}) => {foo: new Foo(...)}
    * @param ducks
    */
-  protected makeDucks<T extends Record<string, DuckType<Duck>>>(ducks: T): DUCKS<T> {
+  protected makeDucks<T extends Record<string, DuckType<Duck>>>(
+    ducks: T
+  ): DUCKS<T> {
     const map = {} as DUCKS<T>;
     for (const route of Object.keys(ducks)) {
       let Duck = ducks[route];
@@ -93,7 +103,9 @@ export default class DuckMap extends Duck {
   get rawDucks() {
     return {};
   }
-  get reducer():  COMBINE_REDUCERS<this['reducers'] & DUCKS_REDUCERS<this['ducks']>> {
+  get reducer(): COMBINE_REDUCERS<
+    this["reducers"] & DUCKS_REDUCERS<this["ducks"]>
+  > {
     const ducksReducers = {};
     for (const key of Object.keys(this.ducks)) {
       ducksReducers[key] = this.ducks[key].reducer;
