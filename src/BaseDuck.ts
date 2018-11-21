@@ -39,7 +39,7 @@ export default abstract class BaseDuck {
   }
   // 哪些属性需要缓存
   protected get _cacheGetters() {
-    return ["types", "selectors", "creators"];
+    return ["types", "rawSelectors", "selectors", "creators"];
   }
   // 生成缓存getter
   private _makeCacheGetters() {
