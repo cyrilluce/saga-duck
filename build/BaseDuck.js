@@ -17,7 +17,7 @@ export default class BaseDuck {
         return route ? `${namespace}/${route}/` : `${namespace}/`;
     }
     get _cacheGetters() {
-        return ["types", "selectors", "creators"];
+        return ["types", "rawSelectors", "selectors", "creators"];
     }
     _makeCacheGetters() {
         const me = this;

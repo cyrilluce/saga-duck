@@ -125,7 +125,7 @@ declare module 'saga-duck/purify' {
 
 }
 declare module 'saga-duck/index' {
-	export { default as BaseDuck } from 'saga-duck/BaseDuck';
+	export { default as BaseDuck, DuckOptions } from 'saga-duck/BaseDuck';
 	export { default as Duck } from 'saga-duck/Duck';
 	export { default as ComposableDuck, default as DuckMap } from 'saga-duck/ComposableDuck';
 	export { default as DuckRuntime, DuckCmpProps, INIT, END } from 'saga-duck/DuckRuntime';

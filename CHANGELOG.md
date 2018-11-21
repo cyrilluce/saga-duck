@@ -1,3 +1,14 @@
+#### 3.0.2 (2018-11-21)
+
+##### New Features
+
+* **duck:**
+  *  export `DuckOptions`, make options extensible ([c709cd29](https://github.com/cyrilluce/saga-duck/commit/c709cd29863b2fc98b2eeaa4ece7e10814f5e5a0))
+
+##### Performance Improvements
+
+* **duck:**  make `rawSelectors` cacheable for inter selectors call ([f19e540f](https://github.com/cyrilluce/saga-duck/commit/f19e540f81996715d4bab01e59c407784c7dc446))
+
 #### 3.0.1 (2018-11-15)
 
 ##### Documentation Changes
