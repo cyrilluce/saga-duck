@@ -1,4 +1,4 @@
-export { default as BaseDuck } from "./BaseDuck";
+export { default as BaseDuck, DuckOptions } from "./BaseDuck";
 export { default as Duck } from "./Duck";
 export {
   default as ComposableDuck,
