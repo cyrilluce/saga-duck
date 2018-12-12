@@ -1,3 +1,9 @@
+#### 3.0.3 (2018-12-12)
+
+##### Chores
+
+* **npm:**  Loosen redux-saga dependent version, doc update. ([7a03e92a](https://github.com/cyrilluce/saga-duck/commit/7a03e92a6b0c07ec53438804a7bda25f48c42991))
+
 #### 3.0.2 (2018-11-21)
 
 ##### New Features

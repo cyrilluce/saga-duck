@@ -164,6 +164,27 @@ ReactDOM.render(
   document.getElementById("root")
 );
 ```
+Root.ts (Duck Component)
+```js
+import * as React from 'react'
+import Counter from "./Counter";
+import { DuckCmpProps } from '../../src/DuckRuntime';
+import Duck from './RootDuck'
+
+export default function Root({ duck, store, dispatch }: DuckCmpProps<Duck>) {
+  const { selectors, creators, ducks: { counter1 } } = duck;
+  return (
+    <div>
+      counter1:
+      <Counter duck={counter1} store={store} dispatch={dispatch} />
+      myself: total increment times: {selectors.total(store)} <br/>
+      <button onClick={()=>dispatch(creators.increment())}>
+        Increment all
+      </button>
+    </div>
+  );
+}
+```
 
 ## Helpers
 ### purify
@@ -207,7 +228,7 @@ creator = (id)=>({ type: types.SET_ID, payload: id })
 ```
 
 ## Typescript support
-See [Duck example](./examples/src/CounterDuck.ts) and [DuckMap example](./examples/src/RootDuck.ts), please use typescript **3.0+** for saga-duck 3.x, and typescript 2.6.1 for saga-duck 2.x.
+See [Duck example](./examples/src/CounterDuck.ts) and [ComposableDuck example](./examples/src/RootDuck.ts), please use typescript **3.0+** for saga-duck 3.x, and typescript 2.6.1 for saga-duck 2.x.
 ### types
 ![ts hint of types](examples/ts-types.png)
 
