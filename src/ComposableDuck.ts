@@ -2,6 +2,7 @@ import { DuckOptions } from "./BaseDuck";
 import Duck, { COMBINE_REDUCERS } from "./Duck";
 import { combineReducers } from "redux";
 import { fork } from "redux-saga/effects";
+import { parallel } from "redux-saga-catch";
 
 type DuckType<T extends Duck> = { new (options?: DuckOptions): T };
 type DUCKS_REDUCERS<T extends Record<string, Duck>> = {
@@ -117,10 +118,12 @@ export default class ComposableDuck extends Duck {
   }
   private *ducksSaga() {
     const { ducks } = this;
+    let sagas: any[] = [];
     for (const key of Object.keys(ducks)) {
       const duck = ducks[key];
-      yield fork([duck, duck.saga]);
+      sagas = sagas.concat(duck.sagas);
     }
+    yield parallel(sagas);
   }
   *saga() {
     yield* super.saga();
