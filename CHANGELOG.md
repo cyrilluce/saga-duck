@@ -1,3 +1,9 @@
+#### 3.0.4 (2019-01-25)
+
+##### Bug Fixes
+
+* **ComposableDuck:**  Legacy #sagas property compatibility fix. ([b10334cb](https://github.com/cyrilluce/saga-duck/commit/b10334cbfe88cf20871bc9a5294ea062fe74dbd0))
+
 #### 3.0.3 (2018-12-12)
 
 ##### Chores
