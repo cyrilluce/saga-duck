@@ -2,7 +2,7 @@
  * 组合ducks，创建redux store
  */
 import { Component, createElement } from "react";
-import { createStore as createReduxStore, applyMiddleware } from "redux";
+import { createStore as createReduxStore, applyMiddleware, compose } from "redux";
 import createSagaMiddleware, { SagaIterator, SagaMiddleware, Task } from "redux-saga";
 import { connect } from "react-redux";
 import { parallel } from "redux-saga-catch";
@@ -21,18 +21,21 @@ export interface DuckCmpProps<T = any> {
 
 export default class DuckRuntime<TState = any> {
   duck: Duck;
+  private enhancers: any[];
   private middlewares: any[];
   private sagaMiddleware: SagaMiddleware<any>;
   public store: any;
   private _tasks: Task[] = [];
   /**
-     * 
+     *
      * @param {*} duck
      * @param middlewares
+     * @param enhancers
      */
-  constructor(duck, ...middlewares) {
+  constructor(duck, middlewares = [], enhancers = []) {
     this.duck = duck;
-    this.middlewares = middlewares;
+    this.middlewares = middlewares || [];
+    this.enhancers = enhancers || [];
 
     this._initStore();
   }
@@ -40,21 +43,19 @@ export default class DuckRuntime<TState = any> {
      * 创建redux store
      */
   _initStore() {
-    const sagaMiddleware = (this.sagaMiddleware = createSagaMiddleware());
-
-    const createStore = applyMiddleware(sagaMiddleware, ...this.middlewares)(
-      createReduxStore
-    );
-
     const duck = this.duck;
-    this.store = createStore(<any>duck.reducer);
-
+    const sagaMiddleware = (this.sagaMiddleware = createSagaMiddleware());
+    const enhancer = compose(
+      applyMiddleware(sagaMiddleware, ...this.middlewares),
+      ...this.enhancers,
+    );
+    this.store = createReduxStore(<any>duck.reducer, <any>enhancer);
     this.addSaga(duck.sagas);
   }
   /**
      * 添加sagas到store中
      * add sagas to store, will auto run.
-     * @param {Array<Saga|Generator>} sagas 
+     * @param {Array<Saga|Generator>} sagas
      */
   addSaga(sagas: Array<() => SagaIterator>) {
     const task = this.sagaMiddleware.run(function*() {
@@ -77,7 +78,7 @@ export default class DuckRuntime<TState = any> {
   /**
      * 快速连接到React组件上
      * connect Redux store to React Component
-     * 用法/usage： 
+     * 用法/usage：
      * @duckContainer.connect()
      * class Container extends React.Component{}
      */

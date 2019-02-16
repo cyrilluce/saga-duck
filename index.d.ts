@@ -100,11 +100,12 @@ declare module 'saga-duck/DuckRuntime' {
 	}
 	export default class DuckRuntime<TState = any> {
 	    duck: Duck;
+	    private enhancers;
 	    private middlewares;
 	    private sagaMiddleware;
 	    store: any;
 	    private _tasks;
-	    constructor(duck: any, ...middlewares: any[]);
+	    constructor(duck: any, middlewares?: any[], enhancers?: any[]);
 	    _initStore(): void;
 	    addSaga(sagas: Array<() => SagaIterator>): Task;
 	    destroy(): void;

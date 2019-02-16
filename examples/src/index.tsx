@@ -13,7 +13,7 @@ const connectWithDuck = (Component, Duck) => {
       : [];
     const duckRuntime = new DuckRuntime(
       new Duck(),
-      ...middlewares
+      middlewares
     );
     const ConnectedComponent = duckRuntime.root()(
       duckRuntime.connect()(Component)

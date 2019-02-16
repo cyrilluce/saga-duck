@@ -1,22 +1,23 @@
 import { Component, createElement } from "react";
-import { createStore as createReduxStore, applyMiddleware } from "redux";
+import { createStore as createReduxStore, applyMiddleware, compose } from "redux";
 import createSagaMiddleware from "redux-saga";
 import { connect } from "react-redux";
 import { parallel } from "redux-saga-catch";
 export const INIT = "@@duck-runtime-init";
 export const END = "@@duck-runtime-end";
 export default class DuckRuntime {
-    constructor(duck, ...middlewares) {
+    constructor(duck, middlewares = [], enhancers = []) {
         this._tasks = [];
         this.duck = duck;
-        this.middlewares = middlewares;
+        this.middlewares = middlewares || [];
+        this.enhancers = enhancers || [];
         this._initStore();
     }
     _initStore() {
-        const sagaMiddleware = (this.sagaMiddleware = createSagaMiddleware());
-        const createStore = applyMiddleware(sagaMiddleware, ...this.middlewares)(createReduxStore);
         const duck = this.duck;
-        this.store = createStore(duck.reducer);
+        const sagaMiddleware = (this.sagaMiddleware = createSagaMiddleware());
+        const enhancer = compose(applyMiddleware(sagaMiddleware, ...this.middlewares), ...this.enhancers);
+        this.store = createReduxStore(duck.reducer, enhancer);
         this.addSaga(duck.sagas);
     }
     addSaga(sagas) {
