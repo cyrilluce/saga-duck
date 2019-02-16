@@ -33,7 +33,15 @@ module.exports = {
               ]
             }
           },
-          "ts-loader"
+          {
+            loader: "ts-loader",
+            options: {
+              compilerOptions: {
+                rootDir: null,
+                rootDirs: ["src", "examples/src"],
+              },
+            },
+          },
         ]
       },
       {
