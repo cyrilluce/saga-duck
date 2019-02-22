@@ -2505,15 +2505,17 @@ redux-logger@^3.0.6:
   dependencies:
     deep-diff "^0.3.5"
 
-redux-saga-catch@0.0.6:
-  version "0.0.6"
-  resolved "http://r.tnpm.oa.com/redux-saga-catch/download/redux-saga-catch-0.0.6.tgz#e1eee1e52bfd2c44652b7c3e36062fdccaffc237"
+"redux-saga-catch@>= 0.0.6 < 1":
+  version "0.0.7"
+  resolved "http://r.tnpm.oa.com/redux-saga-catch/download/redux-saga-catch-0.0.7.tgz#6f837d756629f0994aa137ca05ac087abe90ed43"
+  integrity sha1-b4N9dWYp8JlKoTfKBawIer6Q7UM=
   dependencies:
-    redux-saga "^0.15.3"
+    redux-saga ">= 0.15.3 < 1"
 
-redux-saga@^0.15.3:
-  version "0.15.6"
-  resolved "http://r.tnpm.oa.com/redux-saga/download/redux-saga-0.15.6.tgz#8638dc522de6c6c0a496fe8b2b5466287ac2dc4d"
+"redux-saga@>= 0.15.3 < 1":
+  version "0.16.2"
+  resolved "http://r.tnpm.oa.com/redux-saga/download/redux-saga-0.16.2.tgz#993662e86bc945d8509ac2b8daba3a8c615cc971"
+  integrity sha1-mTZi6GvJRdhQmsK42ro6jGFcyXE=
 
 redux@^3.6.0:
   version "3.7.2"

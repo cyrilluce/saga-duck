@@ -127,6 +127,6 @@ export default class ComposableDuck extends Duck {
   }
   *saga() {
     yield* super.saga();
-    yield* this.ducksSaga();
+    yield fork([this, this.ducksSaga])
   }
 }

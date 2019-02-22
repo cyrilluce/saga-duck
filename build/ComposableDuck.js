@@ -1,5 +1,6 @@
 import Duck from "./Duck";
 import { combineReducers } from "redux";
+import { fork } from "redux-saga/effects";
 import { parallel } from "redux-saga-catch";
 export default class ComposableDuck extends Duck {
     get _cacheGetters() {
@@ -49,6 +50,6 @@ export default class ComposableDuck extends Duck {
     }
     *saga() {
         yield* super.saga();
-        yield* this.ducksSaga();
+        yield fork([this, this.ducksSaga]);
     }
 }
