@@ -2,7 +2,7 @@
  * 组合ducks，创建redux store
  */
 import { Component, createElement } from "react";
-import { createStore as createReduxStore, applyMiddleware } from "redux";
+import { createStore as createReduxStore, applyMiddleware, compose } from "redux";
 import createSagaMiddleware, { SagaIterator, SagaMiddleware, Task } from "redux-saga";
 import { connect } from "react-redux";
 import { parallel } from "redux-saga-catch";
@@ -19,9 +19,15 @@ export interface DuckCmpProps<T = any> {
   dispatch: (action: any) => any;
 }
 
+export interface DuckRuntimeOptions{
+  middlewares?: any[]
+  enhancers?: any[]
+}
+
 export default class DuckRuntime<TState = any> {
   duck: Duck;
   private middlewares: any[];
+  private enhancers: any[];
   private sagaMiddleware: SagaMiddleware<any>;
   public store: any;
   private _tasks: Task[] = [];
@@ -30,9 +36,19 @@ export default class DuckRuntime<TState = any> {
      * @param {*} duck
      * @param middlewares
      */
-  constructor(duck, ...middlewares) {
+  constructor(duck, options?: DuckRuntimeOptions)
+  constructor(duck,  ...middlewares: any[]){
     this.duck = duck;
-    this.middlewares = middlewares;
+    let options: DuckRuntimeOptions
+    if(middlewares.length === 1 && typeof middlewares[0] === 'object'){
+      options = middlewares[0]
+    }else{
+      options = {
+        middlewares
+      }
+    }
+    this.middlewares = options.middlewares || [];
+    this.enhancers = options.enhancers || [];
 
     this._initStore();
   }
@@ -40,15 +56,13 @@ export default class DuckRuntime<TState = any> {
      * 创建redux store
      */
   _initStore() {
-    const sagaMiddleware = (this.sagaMiddleware = createSagaMiddleware());
-
-    const createStore = applyMiddleware(sagaMiddleware, ...this.middlewares)(
-      createReduxStore
-    );
-
     const duck = this.duck;
-    this.store = createStore(<any>duck.reducer);
-
+    const sagaMiddleware = (this.sagaMiddleware = createSagaMiddleware());
+    const enhancer = compose(
+      applyMiddleware(sagaMiddleware, ...this.middlewares),
+      ...this.enhancers,
+    );
+    this.store = createReduxStore(<any>duck.reducer, <any>enhancer);
     this.addSaga(duck.sagas);
   }
   /**

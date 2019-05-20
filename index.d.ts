@@ -98,13 +98,18 @@ declare module 'saga-duck/DuckRuntime' {
 	    store: any;
 	    dispatch: (action: any) => any;
 	}
+	export interface DuckRuntimeOptions {
+	    middlewares?: any[];
+	    enhancers?: any[];
+	}
 	export default class DuckRuntime<TState = any> {
 	    duck: Duck;
 	    private middlewares;
+	    private enhancers;
 	    private sagaMiddleware;
 	    store: any;
 	    private _tasks;
-	    constructor(duck: any, ...middlewares: any[]);
+	    constructor(duck: any, options?: DuckRuntimeOptions);
 	    _initStore(): void;
 	    addSaga(sagas: Array<() => SagaIterator>): Task;
 	    destroy(): void;
@@ -128,7 +133,7 @@ declare module 'saga-duck/index' {
 	export { default as BaseDuck, DuckOptions } from 'saga-duck/BaseDuck';
 	export { default as Duck } from 'saga-duck/Duck';
 	export { default as ComposableDuck, default as DuckMap } from 'saga-duck/ComposableDuck';
-	export { default as DuckRuntime, DuckCmpProps, INIT, END } from 'saga-duck/DuckRuntime';
+	export { default as DuckRuntime, DuckCmpProps, INIT, END, DuckRuntimeOptions } from 'saga-duck/DuckRuntime';
 	export { purify, shouldComponentUpdate } from 'saga-duck/purify';
 	export { asResult, reduceFromPayload, createToPayload, memorize } from 'saga-duck/helper';
 
