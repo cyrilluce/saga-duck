@@ -1,5 +1,5 @@
 import { Component, createElement } from "react";
-import { createStore as createReduxStore, applyMiddleware } from "redux";
+import { createStore as createReduxStore, applyMiddleware, compose } from "redux";
 import createSagaMiddleware from "redux-saga";
 import { connect } from "react-redux";
 import { parallel } from "redux-saga-catch";
@@ -9,14 +9,24 @@ export default class DuckRuntime {
     constructor(duck, ...middlewares) {
         this._tasks = [];
         this.duck = duck;
-        this.middlewares = middlewares;
+        let options;
+        if (middlewares.length === 1 && typeof middlewares[0] === 'object') {
+            options = middlewares[0];
+        }
+        else {
+            options = {
+                middlewares
+            };
+        }
+        this.middlewares = options.middlewares || [];
+        this.enhancers = options.enhancers || [];
         this._initStore();
     }
     _initStore() {
-        const sagaMiddleware = (this.sagaMiddleware = createSagaMiddleware());
-        const createStore = applyMiddleware(sagaMiddleware, ...this.middlewares)(createReduxStore);
         const duck = this.duck;
-        this.store = createStore(duck.reducer);
+        const sagaMiddleware = (this.sagaMiddleware = createSagaMiddleware());
+        const enhancer = compose(applyMiddleware(sagaMiddleware, ...this.middlewares), ...this.enhancers);
+        this.store = createReduxStore(duck.reducer, enhancer);
         this.addSaga(duck.sagas);
     }
     addSaga(sagas) {
@@ -50,7 +60,7 @@ export default class DuckRuntime {
                 componentDidMount() {
                     store.dispatch({ type: INIT });
                     if (super.componentDidMount) {
-                        return super.componentDidMount(...arguments);
+                        return super.componentDidMount();
                     }
                 }
                 componentWillUnmount() {
@@ -59,7 +69,7 @@ export default class DuckRuntime {
                         duckRuntime.destroy();
                     }
                     if (super.componentWillUnmount) {
-                        return super.componentWillUnmount(...arguments);
+                        return super.componentWillUnmount();
                     }
                 }
                 render() {

@@ -1,6 +1,6 @@
 {
   "name": "saga-duck",
-  "version": "2.0.4",
+  "version": "2.1.0",
   "description": "extensible and composable duck for redux-saga",
   "main": "build/index.js",
   "module": "build/index.js",
@@ -14,7 +14,7 @@
     "redux-saga-catch": "0.0.6"
   },
   "devDependencies": {
-    "@types/react": "^16.4.5",
+    "@types/react": "=16.4.5",
     "babel": "^6.23.0",
     "babel-core": "^6.25.0",
     "babel-loader": "^7.0.0",

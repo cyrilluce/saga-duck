@@ -119,13 +119,19 @@ declare module 'saga-duck/DuckRuntime' {
 	    store: any;
 	    dispatch: (action: any) => any;
 	}
+	export interface DuckRuntimeOptions {
+	    middlewares?: any[];
+	    enhancers?: any[];
+	}
 	export default class DuckRuntime<TState = any> {
-	    duck: Duck<TState>;
+	    duck: Duck;
 	    private middlewares;
+	    private enhancers;
 	    private sagaMiddleware;
 	    store: any;
-	    private _tasks;
-	    constructor(duck: any, ...middlewares: any[]);
+		private _tasks;
+		constructor(duck,  ...middlewares: any[]);
+	    constructor(duck: any, options?: DuckRuntimeOptions);
 	    _initStore(): void;
 	    addSaga(sagas: Array<() => SagaIterator>): Task;
 	    destroy(): void;
