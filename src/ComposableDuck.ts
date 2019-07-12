@@ -42,7 +42,7 @@ export default class ComposableDuck extends Duck {
     const map = {} as DUCKS<T>;
     for (const route of Object.keys(ducks)) {
       let Duck = ducks[route];
-      map[route] = new Duck(this.getSubDuckOptions(route)) as any;
+      map[route as keyof T] = new Duck(this.getSubDuckOptions(route)) as any;
     }
     return map;
   }
@@ -107,7 +107,7 @@ export default class ComposableDuck extends Duck {
   get reducer(): COMBINE_REDUCERS<
     this["reducers"] & DUCKS_REDUCERS<this["ducks"]>
   > {
-    const ducksReducers = {};
+    const ducksReducers: any = {};
     for (const key of Object.keys(this.ducks)) {
       ducksReducers[key] = this.ducks[key].reducer;
     }

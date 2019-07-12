@@ -1,17 +1,20 @@
 {
   "name": "saga-duck",
-  "version": "3.1.1",
+  "version": "3.1.2",
   "description": "extensible and composable duck for redux-saga, support typescript 3+.",
   "main": "build/index.js",
   "module": "build/index.js",
+  "types": "build/index.d.ts",
   "directories": {
     "example": "examples"
   },
   "dependencies": {
-    "react-redux": "^5.0.5",
-    "redux": "^3.6.0",
-    "redux-saga": ">= 0.15.3 < 1",
-    "redux-saga-catch": ">= 0.0.6 < 1"
+    "redux-saga-catch": "0.0.9"
+  },
+  "peerDependencies": {
+    "react-redux": ">=5.0.5 <=7",
+    "redux": ">= 3.6.0 <=4",
+    "redux-saga": ">= 0.15.3 <= 1"
   },
   "devDependencies": {
     "@types/node": "^10.12.7",
@@ -24,17 +27,19 @@
     "babel-preset-react": "^6.24.1",
     "babel-preset-stage-0": "^6.24.1",
     "babel-preset-stage-2": "^6.24.1",
-    "dts-generator": "^2.1.0",
-    "react": "^15.5.4",
-    "react-dom": "^15.5.4",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
+    "react-redux": "^7.1.0",
+    "redux": "^4.0.4",
     "redux-logger": "^3.0.6",
+    "redux-saga": "^1.0.5",
     "ts-loader": "^2.3.4",
     "typescript": "^3.1.6",
     "webpack": "^2.5.1"
   },
   "scripts": {
     "example": "webpack",
-    "build": "tsc&&dts-generator --name saga-duck --main saga-duck/index --project ./ --out index.d.ts"
+    "build": "tsc"
   },
   "repository": {
     "type": "git",
@@ -54,7 +59,6 @@
     "helper",
     "index",
     "purify",
-    "index.d.ts",
     "README.md"
   ],
   "author": "cyrilluce@gmail.com",

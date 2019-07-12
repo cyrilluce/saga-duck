@@ -44,7 +44,7 @@ get reducers(){
   }
   /** 内部属性，仅供父Duck或Redux store使用 Interal property, only use for parent Duck or Redux store.*/
   get reducer(): COMBINE_REDUCERS<this['reducers']> {
-    return combineReducers(this.reducers);
+    return combineReducers(this.reducers as any);
   }
 }
 

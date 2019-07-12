@@ -12,12 +12,12 @@ class CounterStep3Duck extends CounterDuck {
     return 3;
   }
 }
+enum Types {
+  "INCREMENT",
+  "CHILD_INCREMENT"
+}
 export default class MyRootDuck extends DuckMap {
   get quickTypes() {
-    enum Types {
-      "INCREMENT",
-      "CHILD_INCREMENT"
-    }
     return {
       ...super.quickTypes,
       ...Types

@@ -1,15 +1,15 @@
 import { Duck, reduceFromPayload } from "../../src";
 import { takeEvery, call, put, select } from "redux-saga/effects";
-import { delay } from "redux-saga";
+import { delay } from "redux-saga/effects";
+enum TYPE {
+  /** 增加 */
+  INCREMENT,
+  INCREMENT_IF_ODD,
+  DECREMENT,
+  INCREMENT_ASYNC
+}
 export default class MyDuck extends Duck {
   get quickTypes() {
-    enum TYPE {
-      /** 增加 */
-      INCREMENT,
-      INCREMENT_IF_ODD,
-      DECREMENT,
-      INCREMENT_ASYNC
-    }
     return {
       ...super.quickTypes,
       ...TYPE
@@ -34,7 +34,7 @@ export default class MyDuck extends Duck {
     };
   }
   get rawSelectors() {
-    type State = this["State"];
+    type State = MyDuck["State"];
     return {
       ...super.rawSelectors,
       count(state: State) {
@@ -68,7 +68,7 @@ export default class MyDuck extends Duck {
     yield* super.saga();
     const { types, selector, selectors, creators, step } = this;
     yield takeEvery(types.INCREMENT_ASYNC, function*() {
-      yield call(delay, 1000);
+      yield delay(1000);
       // select state of this duck
       const state = selector(yield select());
       // select some value of this duck

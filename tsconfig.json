@@ -5,6 +5,7 @@
       "jsx": "react",
       "rootDir": "src",
       "outDir": "build",
+      "declaration": true,
       "removeComments": true,
       "noLib": false,
       "preserveConstEnums": true,
