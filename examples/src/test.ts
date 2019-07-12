@@ -2,7 +2,7 @@ import BaseDuck from "../../src/BaseDuck";
 import Duck from "../../src/Duck";
 import ComposableDuck from "../../src/ComposableDuck";
 import { takeEvery, call, put, select, take } from "redux-saga/effects";
-import { delay } from "redux-saga";
+import { delay } from "redux-saga/effects";
 
 type SimpleState = number;
 class FooSimpleDuck extends BaseDuck {
@@ -192,7 +192,7 @@ class SingleDuck extends Duck {
     yield* super.saga();
     const { types, selector } = this;
     yield takeEvery(types.INCREMENT_ASYNC, function*() {
-      yield call(delay, 1000);
+      yield delay(1000);
       // select state of this duck
       const { count } = selector(yield select());
       yield put({ type: types.INCREMENT });
