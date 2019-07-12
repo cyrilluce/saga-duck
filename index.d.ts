@@ -108,7 +108,8 @@ declare module 'saga-duck/DuckRuntime' {
 	    private enhancers;
 	    private sagaMiddleware;
 	    store: any;
-	    private _tasks;
+		private _tasks;
+		constructor(duck,  ...middlewares: any[]);
 	    constructor(duck: any, options?: DuckRuntimeOptions);
 	    _initStore(): void;
 	    addSaga(sagas: Array<() => SagaIterator>): Task;
