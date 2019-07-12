@@ -39,7 +39,8 @@
   },
   "scripts": {
     "example": "webpack",
-    "build": "tsc"
+    "build": "tsc",
+    "prepublish": "tsc"
   },
   "repository": {
     "type": "git",
