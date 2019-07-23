@@ -37,6 +37,7 @@ export default class DuckRuntime<TState = any> {
      * @param middlewares
      */
   constructor(duck, options?: DuckRuntimeOptions)
+  constructor(duck,  ...middlewares: any[])
   constructor(duck,  ...middlewares: any[]){
     this.duck = duck;
     let options: DuckRuntimeOptions
