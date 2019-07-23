@@ -148,7 +148,7 @@ get types(){
      */
   protected makeTypes<T>(typeEnum: T): TYPES<T> {
     const prefix = this.actionTypePrefix;
-    let typeList: string[] = Object.keys(typeEnum);
+    let typeList: string[] = [];
     const types = {} as TYPES<T>;
     if (typeEnum) {
       typeList = typeList.concat(Object.keys(typeEnum));
