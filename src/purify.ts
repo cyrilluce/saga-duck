@@ -1,4 +1,5 @@
 import { Component, StatelessComponent, ComponentClass } from "react";
+import * as React from 'react'
 
 const hasOwnProperty = Object.prototype.hasOwnProperty;
 
@@ -89,7 +90,7 @@ function shouldComponentUpdateForReplace(nextProps, nextState) {
  * If props.duck's local state unchange, ignore store change.
  */
 export interface PurifyType{
-  <T>(component: StatelessComponent<T>): ComponentClass<T>
+  <T, C extends StatelessComponent<T>>(component: C): C
   <T, C extends ComponentClass<T>>(
     component: C
   ): C
@@ -108,6 +109,10 @@ export const purify:PurifyType = function(component) {
     return Cmp;
   } else {
     const statelessRender = component as StatelessComponent<any>;
+    // React16 use React.memo
+    if(React.memo){
+      return React.memo(statelessRender, shallowEqual)
+    }
     class PureRender extends Component<any> {
       render() {
         return statelessRender(this.props);
