@@ -1,6 +1,6 @@
 {
   "name": "saga-duck",
-  "version": "3.2.1",
+  "version": "3.2.2",
   "description": "extensible and composable duck for redux-saga, support typescript 3+.",
   "main": "build/index.js",
   "module": "build/index.js",
@@ -40,7 +40,7 @@
   "scripts": {
     "example": "webpack",
     "build": "tsc",
-    "prepublish": "tsc"
+    "prepublishOnly": "tsc"
   },
   "repository": {
     "type": "git",
