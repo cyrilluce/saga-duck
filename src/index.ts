@@ -10,7 +10,7 @@ export {
   default as DuckMap
 } from "./ComposableDuck";
 export { default as DuckRuntime, DuckCmpProps, INIT, END, DuckRuntimeOptions } from "./DuckRuntime";
-export { purify, shouldComponentUpdate } from "./purify";
+export { purify, shouldComponentUpdate, memo } from "./purify";
 export {
   asResult,
   reduceFromPayload,

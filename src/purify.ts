@@ -1,4 +1,4 @@
-import { Component, StatelessComponent, ComponentClass } from "react";
+import { Component, FunctionComponent, ComponentClass } from "react";
 import * as React from 'react'
 
 const hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -86,14 +86,16 @@ function shouldComponentUpdateForReplace(nextProps, nextState) {
 }
 
 /**
- * Make React stateless Component Memorizeable.
+ * Make React Component Memorizeable.
  * If props.duck's local state unchange, ignore store change.
  */
 export interface PurifyType{
-  <T, C extends StatelessComponent<T>>(component: C): C
-  <T, C extends ComponentClass<T>>(
+  <P, F extends FunctionComponent<P>>(component: F): F
+  <P, C extends ComponentClass<P>>(
     component: C
   ): C
+  // 最新typescript，在purify带泛型的组件时似乎会报错，方便起见声明一个最宽松的定义
+  <A>(any: A): A
 }
 
 export const purify:PurifyType = function(component) {
@@ -108,7 +110,7 @@ export const purify:PurifyType = function(component) {
     Cmp.prototype.shouldComponentUpdate = shouldComponentUpdateForReplace;
     return Cmp;
   } else {
-    const statelessRender = component as StatelessComponent<any>;
+    const statelessRender = component as FunctionComponent<any>;
     // React16 use React.memo
     if(React.memo){
       return React.memo(statelessRender, shallowEqual)
@@ -124,4 +126,16 @@ export const purify:PurifyType = function(component) {
     (PureRender as any).displayName = statelessRender && statelessRender.name;
     return PureRender;
   }
+}
+
+/**
+ * 优化Duck函数组件，使它在所属duck对应的state未变化时不重新渲染
+ * 
+ * Make React stateless Component Memorizeable.
+ * If props.duck's local state unchange, ignore store change.
+ * 
+ * **仅支持react16 / Use only for react16**
+ */
+export function memo<T>(func: React.FunctionComponent<T>){
+  return React.memo(func, shallowEqual)
 }
