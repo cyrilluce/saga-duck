@@ -1,5 +1,5 @@
 # saga-duck
-extensible and composable duck for redux-saga, typescript 3.x supported.
+extensible and composable duck for redux-saga, **typescript 3.x supported**.
 
 See also
 [ducks-modular-redux](https://github.com/erikras/ducks-modular-redux)
@@ -195,7 +195,9 @@ export default purify(function DuckComponent({ duck, store, dispatch }){ ... })
 ```
 
 ### memorize
-stabilize objects/functions reference, prevent React props unnecessary change.
+stabilize objects/functions reference, prevent React props unnecessary change. 
+
+**With React 16, you can use `useMemo` or `useCallback` hooks instead**
 ```javascript
 import { memorize } from 'saga-duck'
 const getHandler = memorize((duck, dispatch) => ()=>dispatch(duck.creators.bar()) )
@@ -224,7 +226,7 @@ reducer = (state=0, action)=>{
 
 let creator = createToPayload<number>(types.SET_ID)
 // equal to
-creator = (id)=>({ type: types.SET_ID, payload: id })
+creator = (id: number)=>({ type: types.SET_ID, payload: id })
 ```
 
 ## Typescript support
