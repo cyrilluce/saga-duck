@@ -280,7 +280,7 @@ get creators() {
 }
    * ```
    */
-  *saga() {}
+  *saga(): IterableIterator<any> {}
   /** 历史兼容 */
   get sagas() {
     return [this.saga.bind(this)];
