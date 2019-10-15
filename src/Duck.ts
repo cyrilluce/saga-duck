@@ -3,7 +3,7 @@
  * @author cluezhang
  */
 import BaseDuck from './BaseDuck'
- import { combineReducers } from "redux";
+import { combineReducers } from "redux";
 export type COMBINE_REDUCERS<T extends { [key: string]: () => any }> = (
   state: STATE_OF_REDUCERS<T>,
   action
