@@ -12,13 +12,15 @@ export interface DuckOptions {
   selector(globalState: any): any;
   route: string;
 }
-const defaultDuckOptions: DuckOptions = {
-  namespace: "global",
-  selector(a) {
-    return a;
-  },
-  route: ""
-};
+function getDefaultDuckOptions(): DuckOptions{
+  return {
+    namespace: Math.random().toString(36).slice(2, 10),
+    selector(a) {
+      return a;
+    },
+    route: ""
+  }
+}
 export type TYPES<T> = { readonly [P in keyof T]: string };
 
 /**
@@ -29,7 +31,7 @@ export type TYPES<T> = { readonly [P in keyof T]: string };
 export default abstract class BaseDuck {
   protected id: string = generateId();
 
-  constructor(protected options: DuckOptions = defaultDuckOptions) {
+  constructor(protected options: DuckOptions = getDefaultDuckOptions()) {
     this._makeCacheGetters();
   }
   /** 内部属性，ActionType前缀 Internal property, prefix of action type. */
