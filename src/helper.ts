@@ -12,13 +12,13 @@ export function asResult<T>(fn: (...any: any[]) => T, result: any): T {
  * helper - generate simple reducer
  * 用法/usage： num : reduceFromPayload(types.SET_NUM, 0)
  */
-export function reduceFromPayload<T>(
-  actionType: string | number,
-  initialState: T
+export function reduceFromPayload<TState, TType = string>(
+  actionType: TType,
+  initialState: TState
 ) {
   return (
-    state: T = initialState,
-    action: { type: string | number; payload?: T }
+    state: TState = initialState,
+    action: { type: TType; payload?: TState }
   ) => {
     if (action.type === actionType) {
       return action.payload;
@@ -31,8 +31,8 @@ export function reduceFromPayload<T>(
  * helper - generate simple action creator
  * 用法/usage： inc: createToPayload(types.INC)
  */
-export function createToPayload<T>(actionType: string | number) {
-  return (payload: T) => ({
+export function createToPayload<TState, TType = string>(actionType: TType) {
+  return (payload: TState) => ({
     type: actionType,
     payload
   });
@@ -47,6 +47,10 @@ export function createToPayload<T>(actionType: string | number) {
  *
  * @param {*} fn (duck, dispatch, {refs}) => any
  * @return {Function} memorizedFn (duckComponent | props) => cache
+ * @deprecated use `React.useMemo` instead
+ *    ```typescript
+ *    const handlers = React.useMemo(() => { return {...} }, [duck, dispatch])
+ *    ```
  */
 export function memorize<T>(
   fn: (duck: any, dispatch: any) => T
