@@ -8,9 +8,9 @@ import { connect } from "react-redux";
 import { parallel } from "redux-saga-catch";
 import Duck from "./Duck";
 
-/** Fire when React Root Component mounted */
+/** Fire when React Root Component mounted @deprecated */
 export const INIT = "@@duck-runtime-init";
-/** Fire when React Root Component unmounted */
+/** Fire when React Root Component unmounted @deprecated */
 export const END = "@@duck-runtime-end";
 
 export interface DuckCmpProps<T = any> {
