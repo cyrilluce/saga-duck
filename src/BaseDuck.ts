@@ -12,20 +12,20 @@ export interface DuckOptions {
   selector(globalState: any): any;
   route: string;
 }
-function getDefaultDuckOptions(): DuckOptions{
+function getDefaultDuckOptions(): DuckOptions {
   return {
     namespace: Math.random().toString(36).slice(2, 10),
     selector(a) {
       return a;
     },
     route: ""
-  }
+  };
 }
 export type TYPES<T> = { readonly [P in keyof T]: string };
 
 /**
  * 支持reducer的Duck
- * 
+ *
  * Duck support reducer(not reducers)
  */
 export default abstract class BaseDuck {
@@ -163,7 +163,7 @@ get types(){
 
   // ----------------------- reducer -----------------------
   /** Reducer定义 reducer define*/
-  abstract get reducer() 
+  abstract get reducer();
   /** 
    * 仅用于TS中获取State类型
    * 
@@ -282,11 +282,11 @@ get creators() {
 }
    * ```
    */
-  *saga(): IterableIterator<any> {}
+  *saga(): Generator<any, void, any> {}
   /** 历史兼容 */
   get sagas() {
     return [this.saga.bind(this)];
   }
 
-  static memorize = memorize
+  static memorize = memorize;
 }

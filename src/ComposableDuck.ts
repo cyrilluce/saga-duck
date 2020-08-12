@@ -1,15 +1,15 @@
-import { DuckOptions } from "./BaseDuck";
+import BaseDuck, { DuckOptions } from "./BaseDuck";
 import Duck, { COMBINE_REDUCERS } from "./Duck";
 import { combineReducers } from "redux";
 import { fork } from "redux-saga/effects";
 import { parallel } from "redux-saga-catch";
 
-type DuckType<T extends Duck> = { new (options?: DuckOptions): T };
-type DUCKS_REDUCERS<T extends Record<string, Duck>> = {
-  [key in keyof T]: T[key]["reducer"]
+type DuckType<T extends BaseDuck> = { new (options?: DuckOptions): T };
+type DUCKS_REDUCERS<T extends Record<string, BaseDuck>> = {
+  [key in keyof T]: T[key] extends BaseDuck ? T[key]["reducer"] : never;
 };
-type DUCKS<T extends Record<string, DuckType<Duck>>> = {
-  [key in keyof T]: InstanceType<T[key]>
+type DUCKS<T extends Record<string, DuckType<BaseDuck>>> = {
+  [key in keyof T]: InstanceType<T[key]>;
 };
 /**
  * 支持组合多个子Duck（`ducks`）的Duck，同时它自身也支持`reducers`，
@@ -36,7 +36,7 @@ export default class ComposableDuck extends Duck {
    * this.makeDucks({foo: Foo}) => {foo: new Foo(...)}
    * @param ducks
    */
-  protected makeDucks<T extends Record<string, DuckType<Duck>>>(
+  protected makeDucks<T extends Record<string, DuckType<BaseDuck>>>(
     ducks: T
   ): DUCKS<T> {
     const map = {} as DUCKS<T>;
@@ -127,6 +127,6 @@ export default class ComposableDuck extends Duck {
   }
   *saga() {
     yield* super.saga();
-    yield fork([this, this.ducksSaga])
+    yield fork([this, this.ducksSaga]);
   }
 }

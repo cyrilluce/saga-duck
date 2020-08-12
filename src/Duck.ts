@@ -2,19 +2,19 @@
  * saga-duck TS3.0+
  * @author cluezhang
  */
-import BaseDuck from './BaseDuck'
+import BaseDuck from "./BaseDuck";
 import { combineReducers } from "redux";
 export type COMBINE_REDUCERS<T extends { [key: string]: () => any }> = (
   state: STATE_OF_REDUCERS<T>,
   action
 ) => STATE_OF_REDUCERS<T>;
 type STATE_OF_REDUCERS<REDUCERS extends { [key: string]: () => any }> = {
-  [key in keyof REDUCERS]: ReturnType<REDUCERS[key]>
+  [key in keyof REDUCERS]: ReturnType<REDUCERS[key]>;
 };
 
 /**
  * 支持`reducers`配置（如需单一的`reducer`，请使用`BaseDuck`）
- * 
+ *
  * Duck support `reducers` ( If you need single `reducer`, please use `BaseDuck`)
  */
 export default class Duck extends BaseDuck {
@@ -43,8 +43,7 @@ get reducers(){
     return {};
   }
   /** 内部属性，仅供父Duck或Redux store使用 Interal property, only use for parent Duck or Redux store.*/
-  get reducer(): COMBINE_REDUCERS<this['reducers']> {
+  get reducer(): COMBINE_REDUCERS<this["reducers"]> {
     return combineReducers(this.reducers as any);
   }
 }
-
