@@ -6,7 +6,7 @@ import { createStore as createReduxStore, applyMiddleware, compose } from "redux
 import createSagaMiddleware, { SagaIterator, SagaMiddleware, Task } from "redux-saga";
 import { connect } from "react-redux";
 import { parallel } from "redux-saga-catch";
-import Duck from "./Duck";
+import BaseDuck from "./BaseDuck";
 
 /** Fire when React Root Component mounted @deprecated */
 export const INIT = "@@duck-runtime-init";
@@ -24,8 +24,8 @@ export interface DuckRuntimeOptions{
   enhancers?: any[]
 }
 
-export default class DuckRuntime<TState = any> {
-  duck: Duck;
+export default class DuckRuntime<TDuck extends BaseDuck = BaseDuck> {
+  duck: TDuck
   private middlewares: any[];
   private enhancers: any[];
   private sagaMiddleware: SagaMiddleware<any>;
@@ -36,9 +36,9 @@ export default class DuckRuntime<TState = any> {
      * @param {*} duck
      * @param middlewares
      */
-  constructor(duck, options?: DuckRuntimeOptions)
-  constructor(duck,  ...middlewares: any[])
-  constructor(duck,  ...middlewares: any[]){
+  constructor(duck: TDuck, options?: DuckRuntimeOptions)
+  constructor(duck: TDuck,  ...middlewares: any[])
+  constructor(duck: TDuck,  ...middlewares: any[]){
     this.duck = duck;
     let options: DuckRuntimeOptions
     if(middlewares.length === 1 && typeof middlewares[0] === 'object'){
@@ -56,7 +56,7 @@ export default class DuckRuntime<TState = any> {
   /**
      * 创建redux store
      */
-  _initStore() {
+  protected _initStore() {
     const duck = this.duck;
     const sagaMiddleware = (this.sagaMiddleware = createSagaMiddleware());
     const enhancer = compose(
