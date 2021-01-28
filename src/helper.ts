@@ -39,6 +39,22 @@ export function createToPayload<TState, TType = string>(actionType: TType) {
 }
 
 /**
+ * 用于保留saga中 `yield promise` 调用的返回值
+ * 
+ * For typescript only, keep result type from promise effect.
+ * ```typescript
+ * const result = yield *resolvePromise(promise)
+ * ```
+ * @param promise
+ */
+export function* resolvePromise<T>(
+  promise: Promise<T>
+): Generator<any, T, any> {
+  return yield promise
+}
+
+
+/**
  * Memorize function result, for React Performance optimize
  * **MENTION** Should ONLY used to cache data associate with duck and dispatch, and duck MUST be stateless.
  *
