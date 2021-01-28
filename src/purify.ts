@@ -99,7 +99,7 @@ export interface PurifyType{
 }
 
 export const purify:PurifyType = function(component) {
-  if (typeof component.prototype.isReactComponent === "object") {
+  if (typeof component.prototype?.isReactComponent === "object") {
     const Cmp = component as ComponentClass<any>
     if (Cmp.prototype.shouldComponentUpdate !== undefined) {
       console.warn(
