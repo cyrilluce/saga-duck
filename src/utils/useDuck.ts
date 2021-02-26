@@ -14,15 +14,15 @@ export default function useDuck<TDuck extends BaseDuck>(
     return new DuckRuntime(new Duck(), ...extraMiddlewares);
   }, []);
   const { duck, store } = duckRuntime;
+  const [state, setState] = React.useState(store.getState());
   React.useEffect(() => {
+    store.subscribe(() => {
+      setState(store.getState());
+    });
     return () => {
       duckRuntime.destroy();
     };
   }, []);
-  const [state, setState] = React.useState(store.getState());
-  store.subscribe(() => {
-    setState(store.getState());
-  });
   return {
     duck: duck,
     store: state,
