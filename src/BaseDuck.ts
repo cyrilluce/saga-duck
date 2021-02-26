@@ -3,10 +3,13 @@ import { generateId, memorize } from "./helper";
  * saga-duck TS3.0+
  * @author cluezhang
  */
-type GLOBAL_SELECTOR<T> = T extends (state: any, ...rest: infer U) => infer K
+type GLOBAL_SELECTOR<T> = T extends (state, ...rest: infer U) => infer K
   ? (globalState: any, ...rest: U) => K
   : never;
 type GLOBAL_SELECTORS<T> = { [key in keyof T]: GLOBAL_SELECTOR<T[key]> };
+
+
+export type DuckState<T extends BaseDuck> = ReturnType<T["reducer"]>;
 export interface DuckOptions {
   namespace: string;
   selector(globalState: any): any;
@@ -18,7 +21,7 @@ function getDefaultDuckOptions(): DuckOptions {
     selector(a) {
       return a;
     },
-    route: ""
+    route: "",
   };
 }
 export type TYPES<T> = { readonly [P in keyof T]: T[P] };
@@ -32,8 +35,36 @@ export default abstract class BaseDuck {
   protected id: string = generateId();
 
   constructor(protected options: DuckOptions = getDefaultDuckOptions()) {
+    this._checkDisallowInheritGetters();
     this._makeCacheGetters();
   }
+
+  protected get _disallowInheritGetters() {
+    return ["types", "selectors", "selector"];
+  }
+
+  private _checkDisallowInheritGetters() {
+    for (const property of this._disallowInheritGetters) {
+      console.log(property);
+      let target = this;
+      let count = 0;
+      while (target) {
+        target = Object.getPrototypeOf(target);
+        if (!target) {
+          break;
+        }
+        const descriptor = Object.getOwnPropertyDescriptor(target, property);
+        if(descriptor) {
+          count ++;
+        }
+
+        if(count > 1) {
+          throw new Error(`Getter ${property}() disallow inherit`);
+        }
+      }
+    }
+  }
+
   /** 内部属性，ActionType前缀 Internal property, prefix of action type. */
   protected get actionTypePrefix(): string {
     const { namespace, route } = this.options;
@@ -90,7 +121,7 @@ export default abstract class BaseDuck {
   get types(): TYPES<this["quickTypes"]> & this["rawTypes"] {
     return Object.assign(
       {},
-      this.makeTypes(this.quickTypes) as TYPES<this["quickTypes"]>,
+      this.makeTypes<this["quickTypes"]>(this.quickTypes),
       this.rawTypes
     );
   }
@@ -155,7 +186,7 @@ get types(){
     if (typeEnum) {
       typeList = typeList.concat(Object.keys(typeEnum));
     }
-    typeList.forEach(type => {
+    typeList.forEach((type) => {
       types[type as string] = prefix + type;
     });
     return types;
@@ -174,8 +205,10 @@ get types(){
     const state: State = xxx
 }
    */
-  get State(): ReturnType<this["reducer"]> {
-    throw new Error("State() Only use for get state type in Typescript, should not be invoke");
+  get State(): DuckState<this> {
+    throw new Error(
+      "State() Only use for get state type in Typescript, should not be invoke"
+    );
   }
   // ----------------------- selector/selectors ---------------------
   /** 
