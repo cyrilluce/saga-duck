@@ -19,6 +19,9 @@ type DUCKS<T extends Record<string, DuckType<BaseDuck>>> = {
  * but reminder with same `route`, `ducks` will override `reducers`'s state.
  */
 export default class ComposableDuck extends Duck {
+  protected get _disallowInheritGetters() {
+    return [...super._disallowInheritGetters, "ducks"];
+  }
   protected get _cacheGetters() {
     return [...super._cacheGetters, "ducks"];
   }
@@ -67,7 +70,7 @@ export default class ComposableDuck extends Duck {
   get ducks(): DUCKS<this["quickDucks"]> & this["rawDucks"] {
     return Object.assign(
       {},
-      this.makeDucks(this.quickDucks) as DUCKS<this["quickDucks"]>,
+      this.makeDucks<this["quickDucks"]>(this.quickDucks),
       this.rawDucks
     );
   }
