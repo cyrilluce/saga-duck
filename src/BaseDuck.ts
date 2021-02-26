@@ -3,7 +3,7 @@ import { generateId, memorize } from "./helper";
  * saga-duck TS3.0+
  * @author cluezhang
  */
-type GLOBAL_SELECTOR<T> = T extends (state, ...rest: infer U) => infer K
+type GLOBAL_SELECTOR<T> = T extends (state: any, ...rest: infer U) => infer K
   ? (globalState: any, ...rest: U) => K
   : never;
 type GLOBAL_SELECTORS<T> = { [key in keyof T]: GLOBAL_SELECTOR<T[key]> };
@@ -21,10 +21,10 @@ function getDefaultDuckOptions(): DuckOptions {
     selector(a) {
       return a;
     },
-    route: "",
+    route: ""
   };
 }
-export type TYPES<T> = { readonly [P in keyof T]: T[P] };
+export type TYPES<T> = { readonly [P in keyof T]: string };
 
 /**
  * 支持reducer的Duck
