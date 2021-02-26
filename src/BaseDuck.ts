@@ -21,7 +21,7 @@ function getDefaultDuckOptions(): DuckOptions {
     route: ""
   };
 }
-export type TYPES<T> = { readonly [P in keyof T]: string };
+export type TYPES<T> = { readonly [P in keyof T]: T[P] };
 
 /**
  * 支持reducer的Duck
@@ -175,7 +175,7 @@ get types(){
 }
    */
   get State(): ReturnType<this["reducer"]> {
-    return null;
+    throw new Error("State() Only use for get state type in Typescript, should not be invoke");
   }
   // ----------------------- selector/selectors ---------------------
   /** 
