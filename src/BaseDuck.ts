@@ -45,7 +45,6 @@ export default abstract class BaseDuck {
 
   private _checkDisallowInheritGetters() {
     for (const property of this._disallowInheritGetters) {
-      console.log(property);
       let target = this;
       let count = 0;
       while (target) {
