@@ -6,7 +6,12 @@ See also
 [extensible-duck](https://github.com/investtools/extensible-duck)
 
 # example
+Run command:
+```sh
+npm start
+```
 ![example of Counters](examples/example.gif)
+Source code are in `examples` directory
 
 # usage
 ## install

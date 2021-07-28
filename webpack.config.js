@@ -5,6 +5,12 @@ module.exports = {
   mode: "development",
   devtool: "inline-source-map",
   entry: path.resolve(__dirname, "examples/src/index"),
+  devServer: {
+    contentBase: path.join(__dirname, 'examples'),
+    compress: true,
+    port: 9000,
+    open: true
+  },
   resolve: {
     alias: {
       "saga-duck": path.resolve(__dirname, "src/index")
