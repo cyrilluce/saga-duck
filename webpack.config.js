@@ -2,6 +2,7 @@ var webpack = require("webpack");
 var path = require("path");
 
 module.exports = {
+  mode: "development",
   devtool: "inline-source-map",
   entry: path.resolve(__dirname, "examples/src/index"),
   resolve: {
@@ -14,7 +15,7 @@ module.exports = {
     rules: [
       {
         test: /\.tsx?$/,
-        exclude: ["node_modules"],
+        exclude: /node_modules/,
         use: [
           {
             loader: "babel-loader",
@@ -47,7 +48,7 @@ module.exports = {
       {
         test: /\.jsx?$/,
         loader: "babel-loader",
-        exclude: ["node_modules"],
+        exclude: /node_modules/,
         options: {
           presets: [
             [
@@ -67,8 +68,8 @@ module.exports = {
   },
   plugins: [
     new webpack.LoaderOptionsPlugin({
-       debug: true
-     }),
+      debug: true
+    }),
     new webpack.DefinePlugin({
       "process.env.NODE_ENV": '"development"'
     })
