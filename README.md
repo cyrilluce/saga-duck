@@ -148,7 +148,7 @@ class ComposedDuck extends ComposableDuck {
 }
 ```
 
-## Run and connect to React
+## Run and connect to React (Legacy style)
 ```js
 import { DuckRuntime } from "saga-duck";
 import Root from "./Root";
@@ -168,7 +168,7 @@ Root.ts (Duck Component)
 ```js
 import * as React from 'react'
 import Counter from "./Counter";
-import { DuckCmpProps } from '../../src/DuckRuntime';
+import { DuckCmpProps } from 'saga-duck';
 import Duck from './RootDuck'
 
 export default function Root({ duck, store, dispatch }: DuckCmpProps<Duck>) {
@@ -186,7 +186,39 @@ export default function Root({ duck, store, dispatch }: DuckCmpProps<Duck>) {
 }
 ```
 
+## Run and connect to React (hook style)
+```js
+import * as React from 'react'
+import Counter from "./Counter";
+import Duck from './RootDuck'
+import { useDuck } from 'saga-duck'
+
+export default function Root() {
+  const { duck, store, dispatch } = useDuck(Duck)
+  const { selectors, creators, ducks: { counter1 } } = duck;
+  return (
+    <div>
+      counter1:
+      <Counter duck={counter1} store={store} dispatch={dispatch} />
+      myself: total increment times: {selectors.total(store)} <br/>
+      <button onClick={()=>dispatch(creators.increment())}>
+        Increment all
+      </button>
+    </div>
+  );
+}
+```
+
 ## Helpers
+### useDuck
+Connect duck to react in hook style.
+```js
+function MyCmp(){
+  const { duck, store, dispatch } = useDuck(MyDuck)
+  const { selector, creators } = duck;
+  return <>{selector(store).xxx}</>
+}
+```
 ### purify
 make React DuckComponent pure, only rerender when props and duck state changed.
 ```javascript
