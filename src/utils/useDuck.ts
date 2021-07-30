@@ -12,7 +12,7 @@ export default function useDuck<TDuck extends BaseDuck>(
 ): DuckCmpProps<TDuck> {
   const duckRuntime = React.useMemo(() => {
     return new DuckRuntime(new Duck(), ...extraMiddlewares);
-  }, [Duck, extraMiddlewares]);
+  }, [Duck]);
   const { duck, store } = duckRuntime;
   const [state, setState] = React.useState(store.getState());
   React.useEffect(() => {
