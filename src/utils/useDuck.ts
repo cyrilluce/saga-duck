@@ -16,6 +16,7 @@ export default function useDuck<TDuck extends BaseDuck>(
   const { duck, store } = duckRuntime;
   const [state, setState] = React.useState(store.getState());
   React.useEffect(() => {
+    setState(store.getState());
     store.subscribe(() => {
       setState(store.getState());
     });
