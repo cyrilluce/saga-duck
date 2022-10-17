@@ -9,7 +9,7 @@
     "example": "examples"
   },
   "dependencies": {
-    "redux-saga-catch": "0.0.9"
+    "redux-saga-catch": ">= 0.0.9"
   },
   "peerDependencies": {
     "react-redux": ">=5 <=7",
