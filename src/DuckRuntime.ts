@@ -3,7 +3,7 @@
  */
 import { Component, createElement } from "react";
 import { createStore as createReduxStore, applyMiddleware, compose } from "redux";
-import createSagaMiddleware, { SagaIterator, SagaMiddleware, Task } from "redux-saga";
+import createSagaMiddleware, { Saga, SagaMiddleware, Task } from "redux-saga";
 import { connect } from "react-redux";
 import { parallel } from "redux-saga-catch";
 import BaseDuck from "./BaseDuck";
@@ -71,7 +71,7 @@ export default class DuckRuntime<TDuck extends BaseDuck = BaseDuck> {
      * add sagas to store, will auto run.
      * @param {Array<Saga|Generator>} sagas 
      */
-  addSaga(sagas: Array<() => SagaIterator>) {
+  addSaga(sagas: Array<Saga>) {
     const task = this.sagaMiddleware.run(function*() {
       yield parallel(sagas);
     });
