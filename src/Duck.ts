@@ -3,7 +3,7 @@
  * @author cluezhang
  */
 import BaseDuck from "./BaseDuck";
-import { CombinedState, combineReducers, Reducer, ReducersMapObject } from "redux";
+import { CombinedState, combineReducers, Reducer, ReducersMapObject, StateFromReducersMapObject } from "redux";
 export type COMBINE_REDUCERS<T extends { [key: string]: () => any }> = (
   state: STATE_OF_REDUCERS<T>,
   action
@@ -43,7 +43,7 @@ get reducers(){
     return {};
   }
   /** 内部属性，仅供父Duck或Redux store使用 Interal property, only use for parent Duck or Redux store.*/
-  get reducer(): Reducer<CombinedState<Readonly<any>>> {
+  get reducer(): Reducer<CombinedState<Readonly<StateFromReducersMapObject<this["reducers"]>>>> {
     return combineReducers(this.reducers as any);
   }
 }
