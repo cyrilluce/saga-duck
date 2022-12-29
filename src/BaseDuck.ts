@@ -1,3 +1,4 @@
+import { CombinedState, Reducer } from "redux";
 import { generateId, memorize } from "./helper";
 /**
  * saga-duck TS3.0+
@@ -9,7 +10,7 @@ type GLOBAL_SELECTOR<T> = T extends (state: any, ...rest: infer U) => infer K
 type GLOBAL_SELECTORS<T> = { [key in keyof T]: GLOBAL_SELECTOR<T[key]> };
 
 
-export type DuckState<T extends BaseDuck> = ReturnType<T["reducer"]>;
+export type DuckState<T extends BaseDuck> = T["reducer"] extends Reducer<infer S> ? S : any;
 export interface DuckOptions {
   namespace: string;
   selector(globalState: any): any;
@@ -193,7 +194,7 @@ get types(){
 
   // ----------------------- reducer -----------------------
   /** Reducer定义 reducer define*/
-  abstract get reducer();
+  abstract get reducer(): Reducer<CombinedState<Readonly<any>>>;
   /** 
    * 仅用于TS中获取State类型
    * 

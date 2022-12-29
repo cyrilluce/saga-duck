@@ -1,5 +1,6 @@
 import * as React from "react";
 import { Provider } from 'react-redux'
+import BaseDuck from "../BaseDuck";
 import DuckRuntime, { DuckCmpProps } from "../DuckRuntime";
 
 type OMIT_DUCK_CMP<TProps> = Omit<TProps, 'duck' | 'store' | 'dispatch'>
@@ -18,7 +19,7 @@ const ConnectedComponent = connectWithDuck(Component, Duck, [ createLogger() ])
  * @param Duck 
  * @param extraMiddlewares 
  */
-export default function connectWithDuck<TProps extends DuckCmpProps<TDuck>, TState, TDuck>(
+export default function connectWithDuck<TProps extends DuckCmpProps<TDuck>, TState, TDuck extends BaseDuck>(
   Component: React.ComponentClass<TProps, TState>,
   Duck: DuckClass<TDuck>,
   extraMiddlewares?: any[]

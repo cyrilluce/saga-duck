@@ -1,6 +1,6 @@
 import BaseDuck, { DuckOptions } from "./BaseDuck";
 import Duck, { COMBINE_REDUCERS } from "./Duck";
-import { combineReducers } from "redux";
+import { CombinedState, combineReducers, Reducer, StateFromReducersMapObject } from "redux";
 import { fork } from "redux-saga/effects";
 import { parallel } from "redux-saga-catch";
 
@@ -107,14 +107,14 @@ export default class ComposableDuck extends Duck {
   get rawDucks() {
     return {};
   }
-  get reducer(): COMBINE_REDUCERS<
-    this["reducers"] & DUCKS_REDUCERS<this["ducks"]>
-  > {
+  get reducer(): Reducer<CombinedState<Readonly<
+    StateFromReducersMapObject<this["reducers"] & DUCKS_REDUCERS<this["ducks"]>>
+  >>> {
     const ducksReducers: any = {};
     for (const key of Object.keys(this.ducks)) {
       ducksReducers[key] = this.ducks[key].reducer;
     }
-    return combineReducers({
+    return combineReducers<StateFromReducersMapObject<this["reducers"] & DUCKS_REDUCERS<this["ducks"]>>>({
       ...this.reducers,
       ...ducksReducers
     });

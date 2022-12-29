@@ -6,16 +6,16 @@ import { createStore as createReduxStore, applyMiddleware, compose } from "redux
 import createSagaMiddleware, { Saga, SagaMiddleware, Task } from "redux-saga";
 import { connect } from "react-redux";
 import { parallel } from "redux-saga-catch";
-import BaseDuck from "./BaseDuck";
+import BaseDuck, { DuckState } from "./BaseDuck";
 
 /** Fire when React Root Component mounted @deprecated */
 export const INIT = "@@duck-runtime-init";
 /** Fire when React Root Component unmounted @deprecated */
 export const END = "@@duck-runtime-end";
 
-export interface DuckCmpProps<T = any> {
+export interface DuckCmpProps<T extends BaseDuck = BaseDuck> {
   duck: T;
-  store: any;
+  store: DuckState<T>;
   dispatch: (action: any) => any;
 }
 
