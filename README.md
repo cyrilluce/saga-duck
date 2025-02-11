@@ -1,3 +1,8 @@
+> [!IMPORTANT]
+> This project is no longer maintained
+
+---
+
 # saga-duck
 extensible and composable duck for redux-saga, **typescript 3.x supported**.
 
